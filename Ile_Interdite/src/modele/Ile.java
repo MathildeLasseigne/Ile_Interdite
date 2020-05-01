@@ -2,9 +2,10 @@ package modele;
 
 import java.util.ArrayList;
 import java.util.Random;
+import observateur.Observable;;
 
 
-public class Ile {
+public class Ile extends Observable {
 	private Zone[][] territoire;
 	private ArrayList<Coord> submerg = new ArrayList<>();
 	private ArrayList<Coord> innond = new ArrayList<>();
@@ -13,6 +14,11 @@ public class Ile {
 	
 	public Ile() {
 		initialize();
+	}
+	
+	public void updateIle() {
+		inonde();
+		notifyObservers();
 	}
 	
 	/**
@@ -29,12 +35,29 @@ public class Ile {
 	}
 	
 	public void inonde() {
-		int rand1 = rangedRandomInt(0, submerg.size()+innond.size()-1);
-		int rand2 = rangedRandomInt(0, submerg.size()+innond.size()-1);
-		int rand3 = rangedRandomInt(0, submerg.size()+innond.size()-1);
 		
-		int[] rand = new int[3];
+		for (int i=0; i<3; i++) {
+			int rand = rangedRandomInt(0, submerg.size()+innond.size()-1);
+			Coord c;
+			if (rand >= submerg.size()) {
+				c = getVoisin(innond.get(rand), true);
+			} else {
+				c = getVoisin(submerg.get(rand), true);
+			}
+			subCoordList(territoire[c.getOrd()][c.getAbsc()]);
+			territoire[c.getOrd()][c.getAbsc()].inonde();
+			addCoordList(territoire[c.getOrd()][c.getAbsc()]);
+		}
 		
+	}
+	
+	/**
+	 * Asseche une zone à la coordonee c
+	 * @param c
+	 * @return true si la zone a pu etre assechee
+	 */
+	public boolean asseche(Coord c) {
+		return territoire[c.getOrd()][c.getAbsc()].asseche();
 	}
 	
 	
@@ -65,11 +88,36 @@ public class Ile {
 	}
 	
 	/**
-	 * Renvoie une coordonnée adjacente à c si elle n'est pas submergée
-	 * @param c
+	 * Ajoute les coordonnees de z à la liste submerg ou innond en fonction de son etat
+	 * @param z
+	 */
+	private void addCoordList(Zone z) {
+		if (z.getEtat() == Etat.submergee) {
+			this.submerg.add(z.getCoord());
+		} else if (z.getEtat() == Etat.inondee) {
+			this.innond.add(z.getCoord());
+		}
+	}
+	
+	/**
+	 * Retire les coordonnees de z à la liste submerg ou innond en fonction de son etat
+	 * @param z
+	 */
+	private void subCoordList(Zone z) {
+		if (z.getEtat() == Etat.submergee) {
+			this.submerg.remove(z.getCoord());
+		} else if (z.getEtat() == Etat.inondee) {
+			this.innond.remove(z.getCoord());
+		}
+	}
+
+	/**
+	 * Renvoie une coordonnée adjacente à c
+	 * @param c 
+	 * @param sub true si on garde les voisins submergés
 	 * @return
 	 */
-	public Coord getVoisin(Coord c) {
+	public Coord getVoisin(Coord c, boolean sub) {
 		Coord[] voisins = new Coord[4];
 		voisins[0] = new Coord(c.getAbsc(), c.getOrd()+1);
 		voisins[1] = new Coord(c.getAbsc()+1, c.getOrd());
@@ -80,13 +128,50 @@ public class Ile {
 		
 		while (valid == false) {
 			vois = voisins[rangedRandomInt(0,3)];
-			if(estSurIle(vois) && ! submerg.contains(vois)) {
-				valid = true;
+			if (sub == false) {
+				if(estSurIle(vois) && ! submerg.contains(vois)) {
+					valid = true;
+				}
+			} else {
+				if(estSurIle(vois)) {
+					valid = true;
+				}
 			}
 		}
 		return vois;
 	}
 	
+	/**
+	 * Verifie si la coord c1 est voisine de la coord c
+	 * @param c
+	 * @param c2
+	 * @param sub true si on garde les voisins submergés
+	 * @return
+	 */
+	public boolean estVoisin(Coord c, Coord c2, boolean sub) {
+		if (sub == false) {
+			if(estSurIle(c2) && ! submerg.contains(c2)) {
+				if ((c == new Coord(c.getAbsc(), c.getOrd()+1)) || c == new Coord(c.getAbsc()+1, c.getOrd()) || c == new Coord(c.getAbsc(), c.getOrd()-1) || c == new Coord(c.getAbsc()-1, c.getOrd())) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		} else {
+			if(estSurIle(c2)) {
+				if ((c == new Coord(c.getAbsc(), c.getOrd()+1)) || c == new Coord(c.getAbsc()+1, c.getOrd()) || c == new Coord(c.getAbsc(), c.getOrd()-1) || c == new Coord(c.getAbsc()-1, c.getOrd())) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		}
+		return false;
+	}
+
+		
+		
+		
 	/**
 	 * Récupère les coordonnees faisant partie du "cadre" de la grille
 	 * @return ArrayList de Coord
@@ -115,22 +200,14 @@ public class Ile {
 		return cadre;
 	}
 	
-	/**
-	 * Verifie si la coord c1 est voisine de la coord c
-	 * @param c
-	 * @param c2
-	 * @return
-	 */
-	public boolean estVoisin(Coord c, Coord c2) {
-		if(estSurIle(c2) && ! submerg.contains(c2)) {
-			if ((c == new Coord(c.getAbsc(), c.getOrd()+1)) || c == new Coord(c.getAbsc()+1, c.getOrd()) || c == new Coord(c.getAbsc(), c.getOrd()-1) || c == new Coord(c.getAbsc()-1, c.getOrd())) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-		return false;
+	public Zone getZone(Coord c) {
+		return territoire[c.getOrd()][c.getAbsc()];
 	}
+	public Zone getZone(int x, int y) {
+		return territoire[x][y];
+	}
+	
+
 	
 	/**
 	 * Cree un int random compris dans un certain intervalle [rangeMin, rangeMax]

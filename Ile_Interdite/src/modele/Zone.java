@@ -1,8 +1,8 @@
 package modele;
 
 public class Zone {
-	public Etat etat;
-	public Type type;
+	private Etat etat;
+	private Type type;
 	
 	private Coord coord;
 	
@@ -48,10 +48,12 @@ public class Zone {
 	/**
 	 * Asseche la zone si elle est assechable
 	 */
-	public void asseche() {
+	public boolean asseche() {
 		if (estAssechable()) {
 			etat = Etat.normale;
+			return true;
 		}
+		return false;
 	}
 	
 	/**
@@ -83,5 +85,14 @@ public class Zone {
 	public Coord getCoord() {
 		return coord;
 	}
+	
+	public Etat getEtat() {
+		return this.etat;
+	}
+	
+	public Type getType() {
+		return this.type;
+	}
+	
 	
 }
