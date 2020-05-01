@@ -1,0 +1,2 @@
+module Ile_Interdite {
+}
