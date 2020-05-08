@@ -18,4 +18,7 @@ public class Coord {
 		return this.ord;
 	}
 	
+	public String toString() {
+		return "("+absc+", "+ord+")";
+	}
 }

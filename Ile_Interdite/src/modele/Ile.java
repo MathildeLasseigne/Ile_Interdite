@@ -6,19 +6,38 @@ import observateur.Observable;;
 
 
 public class Ile extends Observable {
+	/**
+	 * Liste des zones de l'ile, arrangees selon leurs coordonnees
+	 */
 	private Zone[][] territoire;
+	/**
+	 * Liste des zones submergees
+	 */
 	private ArrayList<Coord> submerg = new ArrayList<>();
+	/**
+	 * Liste des zones innondees
+	 */
 	private ArrayList<Coord> innond = new ArrayList<>();
+	/**
+	 * Liste des zones ayant un voisin non submergé et au moins un submerge
+	 * <br/>Mis a jour par cleanShore()
+	 */
+	private ArrayList<Coord> shore = new ArrayList<>();
 	
-	public static final int HAUTEUR=40, LARGEUR=60;
+	public static final int HAUTEUR=40, LARGEUR=40;
+	/**
+	 * Le nombre de coordonnees utilisees par l ile (ile+cadre)
+	 */
+	private int nbCoord;
 	
 	public Ile() {
 		initialize();
 	}
 	
-	public void updateIle() {
-		inonde();
+	public boolean updateIle() {
 		notifyObservers();
+		return inonde(30);
+		
 	}
 	
 	/**
@@ -32,24 +51,73 @@ public class Ile extends Observable {
 			}
 		}
 		submerg = getCadre(); //Considere les coordonnees hors de l'ile comme submergees
+		initShore();
+		nbCoord = (HAUTEUR*LARGEUR)+getCadre().size();
 	}
 	
-	public void inonde() {
+	
+	/**
+	 * 
+	 */
+	/**
+	 * Inonde nb zones non submergees
+	 * @param nb Le nombre de zones a submerger
+	 * @return Indique s'il reste assez de zones a submerger
+	 */
+	private boolean inonde(int nb) {
+		if(this.nbCoord-submerg.size() < nb) {
+			return false;
+		}
 		
-		for (int i=0; i<3; i++) {
-			int rand = rangedRandomInt(0, submerg.size()+innond.size()-1);
+		for (int i=0; i<nb; i++) {
 			Coord c;
-			if (rand >= submerg.size()) {
-				c = getVoisin(innond.get(rand), true);
-			} else {
-				c = getVoisin(submerg.get(rand), true);
-			}
+			c = getRandCoordVois();
 			subCoordList(territoire[c.getOrd()][c.getAbsc()]);
 			territoire[c.getOrd()][c.getAbsc()].inonde();
 			addCoordList(territoire[c.getOrd()][c.getAbsc()]);
+			shore.add(c);
+			cleanShore();
 		}
 		
+		return true;
 	}
+	
+	/**
+	 * Recupere au hazard une coord parmis les voisines de shore qui ne sont pas submergees
+	 * @return
+	 */
+	private Coord getRandCoordVois() {
+		int rand = rangedRandomInt(0, shore.size()-1);
+		Coord c;
+		
+		c = getVoisin(shore.get(rand), false);
+		if (c==null) {
+			c = getRandCoordVois();
+		}
+		
+		return c;
+	}
+	
+//	/**
+//	 * Recupere au hazard une coord parmis les voisines de shore et innond qui ne sont pas submergees
+//	 * @return
+//	 */
+//	private Coord getRandCoordVois() {
+//		int rand = rangedRandomInt(0, shore.size()+innond.size()-1);
+//		Coord c;
+//		if (rand >= shore.size()) {
+//			c = getVoisin(innond.get(rand-shore.size()), false);
+//			if (c==null) { //Au cas ou la zone inondee soit entouree de zones submergees (ilot)
+//				c = getRandCoordVois();
+//			}
+//		} else {
+//			c = getVoisin(shore.get(rand), false);
+//			if (c==null) {
+//				c = getRandCoordVois();
+//			}
+//		}
+//		return c;
+//	}
 	
 	/**
 	 * Asseche une zone à la coordonee c
@@ -110,66 +178,124 @@ public class Ile extends Observable {
 			this.innond.remove(z.getCoord());
 		}
 	}
-
+	
+	/**
+	 * Verifie si la zone de coordonne c n est pas submergee mais entouree de zones submergees
+	 * @param c
+	 * @return
+	 */
+	private boolean estIlot(Coord c) {
+		if(submerg.contains(c)) {
+			return false;
+		}
+		ArrayList<Coord> vois = getListVoisins(c);
+		boolean isIlot = true;
+		for (Coord cVois : vois) {
+			if(getZone(cVois).estAccessible()) {
+				isIlot = false;
+			}
+		}
+		return isIlot;
+	}
+	
 	/**
 	 * Renvoie une coordonnée adjacente à c
 	 * @param c 
 	 * @param sub true si on garde les voisins submergés
-	 * @return
+	 * @return null si sub == false et c est entouree de zones submergees
 	 */
 	public Coord getVoisin(Coord c, boolean sub) {
-		Coord[] voisins = new Coord[4];
-		voisins[0] = new Coord(c.getAbsc(), c.getOrd()+1);
-		voisins[1] = new Coord(c.getAbsc()+1, c.getOrd());
-		voisins[2] = new Coord(c.getAbsc(), c.getOrd()-1);
-		voisins[3] = new Coord(c.getAbsc()-1, c.getOrd());
+		
+		if(estIlot(c) && sub==false) {
+			return null;
+		}
+		
+		ArrayList<Coord> voisList = getListVoisins(c);
+		
 		Coord vois = null;
 		boolean valid = false;
 		
 		while (valid == false) {
-			vois = voisins[rangedRandomInt(0,3)];
+			vois = voisList.get(rangedRandomInt(0,voisList.size()-1));
 			if (sub == false) {
-				if(estSurIle(vois) && ! submerg.contains(vois)) {
+				if(! submerg.contains(vois)) {
 					valid = true;
 				}
 			} else {
-				if(estSurIle(vois)) {
-					valid = true;
-				}
+				valid = true;
 			}
 		}
 		return vois;
 	}
 	
+	private ArrayList<Coord> getListVoisins(Coord c){
+		ArrayList<Coord> vois = new ArrayList<>();
+		Coord[] voisins = new Coord[4];
+		voisins[0] = new Coord(c.getAbsc(), c.getOrd()+1);
+		voisins[1] = new Coord(c.getAbsc()+1, c.getOrd());
+		voisins[2] = new Coord(c.getAbsc(), c.getOrd()-1);
+		voisins[3] = new Coord(c.getAbsc()-1, c.getOrd());
+		for(int i=0; i<4; i++) {
+			if(estSurIle(voisins[i])) {
+				vois.add(voisins[i]);
+			}
+		}
+		
+		return vois;
+	}
+	
 	/**
-	 * Verifie si la coord c1 est voisine de la coord c
+	 * Verifie si la coord c2 est voisine de la coord c (Quelque soit l etat de c)
 	 * @param c
 	 * @param c2
-	 * @param sub true si on garde les voisins submergés
+	 * @param sub true si on garde c2 submergés
 	 * @return
 	 */
 	public boolean estVoisin(Coord c, Coord c2, boolean sub) {
+		ArrayList<Coord> vois = getListVoisins(c);
 		if (sub == false) {
-			if(estSurIle(c2) && ! submerg.contains(c2)) {
-				if ((c == new Coord(c.getAbsc(), c.getOrd()+1)) || c == new Coord(c.getAbsc()+1, c.getOrd()) || c == new Coord(c.getAbsc(), c.getOrd()-1) || c == new Coord(c.getAbsc()-1, c.getOrd())) {
-					return true;
-				} else {
-					return false;
-				}
+			if( ! submerg.contains(c2)) {
+				return vois.contains(c2);
 			}
 		} else {
-			if(estSurIle(c2)) {
-				if ((c == new Coord(c.getAbsc(), c.getOrd()+1)) || c == new Coord(c.getAbsc()+1, c.getOrd()) || c == new Coord(c.getAbsc(), c.getOrd()-1) || c == new Coord(c.getAbsc()-1, c.getOrd())) {
-					return true;
-				} else {
-					return false;
-				}
-			}
+			return vois.contains(c2);
 		}
 		return false;
 	}
 
-		
+	/**
+	 * Met a jour la liste des zones ayant un voisin non submergé et au moins un submerge
+	 */
+	private void cleanShore() {
+		for(int i = 0; i<this.shore.size(); i++) {
+			ArrayList<Coord> vois = getListVoisins(this.shore.get(i));
+			boolean isShore = false;
+			for (Coord cVois : vois) {
+				if(getZone(cVois).estAccessible()) {
+					isShore = true;
+				}
+			}
+			if(isShore == false) {
+				this.shore.remove(i); 
+				//Si la coord n a pas au moins un voisin accessible, l enlever de la liste shore
+			}
+		}
+	}	
+	
+	/**
+	 * Initialise le cadre en tant que shore sauf les coins
+	 */
+	private void initShore() {
+		for(Coord c : getCadre()) {
+			ArrayList<Coord> vois = getListVoisins(c);
+			if(vois.size()>1) {
+				System.out.println("Probleme initialisation shore coord" + c +"\n");
+			} else if (vois.size()==1) {
+				this.shore.add(c);
+			}
+			
+		}
+	}
 		
 		
 	/**
@@ -182,14 +308,14 @@ public class Ile extends Observable {
 			cadre.add(new Coord(-1, i)); 
 			cadre.add(new Coord(LARGEUR, i));
 			if (estSurIle(new Coord(-1, i)) || estSurIle(new Coord(LARGEUR, i))) {
-				System.out.println("Probleme creation cadre hauteur");
+				System.out.println("Probleme creation cadre hauteur\n");
 			}
 		}
 		for(int j = 0; j<LARGEUR; j++) {
 			cadre.add(new Coord(j, -1));
 			cadre.add(new Coord(j, HAUTEUR));
 			if (estSurIle(new Coord(j, -1)) || estSurIle(new Coord(j, HAUTEUR))) {
-				System.out.println("Probleme creation cadre largeur");
+				System.out.println("Probleme creation cadre largeur\n");
 			}
 		}
 		cadre.add(new Coord(-1, -1));
@@ -200,9 +326,21 @@ public class Ile extends Observable {
 		return cadre;
 	}
 	
+	/**
+	 * Retourne la zone de coordonnees c
+	 * @param c
+	 * @return
+	 */
 	public Zone getZone(Coord c) {
 		return territoire[c.getOrd()][c.getAbsc()];
 	}
+	
+	/**
+	 * Retourne la zone d ordonee x et d abscisse y
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public Zone getZone(int x, int y) {
 		return territoire[x][y];
 	}

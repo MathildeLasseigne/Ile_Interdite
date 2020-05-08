@@ -4,4 +4,8 @@ public abstract class Type {
 	public Type() {
 		
 	}
+	
+	public abstract boolean hasArtefact(); 
+	
+	public abstract boolean isFinal();
 }

@@ -68,7 +68,7 @@ public class Zone {
 	}
 	
 	/**
-	 * Verifie si la zone est accessible
+	 * Verifie si la zone est accessible (cad normale ou inondee)
 	 * @return
 	 */
 	public boolean estAccessible() {
