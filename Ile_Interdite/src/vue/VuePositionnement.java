@@ -10,7 +10,7 @@ import modele.Ile;
 
 public class VuePositionnement extends JPanel {
 	
-
+//Utiliser GridBagLayout ?
 	
 	/**
      * Controleur

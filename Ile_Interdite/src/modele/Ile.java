@@ -24,6 +24,8 @@ public class Ile extends Observable {
 	 */
 	private ArrayList<Coord> shore = new ArrayList<>();
 	
+	private Coord heliport;
+	
 	public static final int HAUTEUR=40, LARGEUR=40;
 	/**
 	 * Le nombre de coordonnees utilisees par l ile (ile+cadre)
@@ -147,7 +149,7 @@ public class Ile extends Observable {
 	 * @param c
 	 * @return
 	 */
-	private boolean estSurIle(Coord c) {
+	public boolean estSurIle(Coord c) {
 		if ((c.getAbsc() > LARGEUR-1) || (c.getAbsc() < 0) || (c.getOrd() > HAUTEUR-1) || (c.getOrd() < 0)) {
 			return false;
 		} else {
@@ -345,7 +347,17 @@ public class Ile extends Observable {
 		return territoire[x][y];
 	}
 	
-
+	/**
+	 * Verifie si la zone de coord c est safe
+	 * @param c
+	 * @return
+	 */
+	public boolean isSafe(Coord c) {
+		if(getZone(c).estAccessible()) {
+			return true;
+		}
+		return false;
+	}
 	
 	/**
 	 * Cree un int random compris dans un certain intervalle [rangeMin, rangeMax]
@@ -358,4 +370,110 @@ public class Ile extends Observable {
 		int randomValue = rangeMin + r.nextInt(rangeMax +1);
 		return randomValue;
 	}
+	
+	public Coord rangedRandomCoord(int x1, int x2, int y1, int y2) {
+		return new Coord(rangedRandomInt(x1, x2), rangedRandomInt(y1, y2));
+	}
+	
+	/**
+	 * Renvoie la position de l heliport
+	 * @return
+	 */
+	public Coord getHeliport() {
+		return heliport;
+	}
+
+	/**
+	 * Decoupe l ile en 4 secteurs et choisi une coord au hasard selon les criteres voulus :
+	 * </br>1 : Center
+	 * </br>2 : Inter
+	 * </br>3 : Outer
+	 * </br>4 : Border (3 zones a cote de la bordure)
+	 * </br>5 : All - Border
+	 * </br>6 : Center + Inter
+	 * @param range Le secteur de la coordonnee voulue
+	 * @return
+	 */
+	public Coord getRandCoord(int range) {
+		Coord c = rangedRandomCoord(0, LARGEUR-1, 0, HAUTEUR-1);
+		if (range == 1) {
+			while(! isInSector(1, c)) {
+				c = rangedRandomCoord(0, LARGEUR-1, 0, HAUTEUR-1);
+			}
+		} else if (range == 2) {
+			while(! ( isInSector(2, c) && ! isInSector(1, c))) {
+				c = rangedRandomCoord(0, LARGEUR-1, 0, HAUTEUR-1);
+			}
+		} else if (range == 3) {
+			while(! ( isInSector(3, c) && ! isInSector(2, c))) {
+				c = rangedRandomCoord(0, LARGEUR-1, 0, HAUTEUR-1);
+			}
+		} else if (range == 4) {
+			while(! ( isInSector(4, c) && ! isInSector(3, c))) {
+				c = rangedRandomCoord(0, LARGEUR-1, 0, HAUTEUR-1);
+			}
+		} else if (range == 5) {
+			while(! isInSector(3, c)) {
+				c = rangedRandomCoord(0, LARGEUR-1, 0, HAUTEUR-1);
+			}
+		} else if (range == 6) {
+			while(! isInSector(2, c)) {
+				c = rangedRandomCoord(0, LARGEUR-1, 0, HAUTEUR-1);
+			}
+		} else {
+			System.out.println("Ne fait pas partie des secteurs pris en charge");
+		}
+		return c;
+	}
+	
+
+	/**
+	 * Verifie si la coord (x, y) est dans le secteur :
+	 * </br>1 : Center
+	 * </br>2 : Inter + Center
+	 * </br>3 : Outer + Inter + Center
+	 * </br>4 : All
+	 * @param range
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	private boolean isInSector(int range, int x, int y) {
+		int hMilieu = HAUTEUR/2;
+		int lMilieu = LARGEUR/2;
+		if (range == 1) {
+			if( ( x >lMilieu - (lMilieu/3)) && ( x <lMilieu + (lMilieu/3)) && (y>hMilieu - (hMilieu/3)) && (y<hMilieu + (hMilieu/3))  ) {
+				return true;
+			}
+		} else if (range == 2) {
+			if( ( x >(2*lMilieu) - (lMilieu/3)) && ( x <(2*lMilieu) + (lMilieu/3)) && (y>(2*hMilieu) - (hMilieu/3)) && (y<(2*hMilieu) + (hMilieu/3))  ) {
+				return true;
+			}
+		} else if (range == 3) {
+			if( ( x > 2) && ( x <LARGEUR-4) && (y>2) && (y<HAUTEUR-4)  ) {
+				return true;
+			}
+		} else if (range == 4) {
+			return estSurIle(new Coord(x,y));
+		}
+		return false;
+	}
+	
+	/**
+	 * Verifie si la coord c est dans le secteur :
+	 * </br>1 : Center
+	 * </br>2 : Inter + Center
+	 * </br>3 : Outer + Inter + Center
+	 * </br>4 : All
+	 * @param range
+	 * @param c
+	 * @return
+	 */
+	private boolean isInSector(int range, Coord c) {
+		return isInSector(range, c.getAbsc(), c.getOrd());
+	}
+	
+	
+	
+	
 }

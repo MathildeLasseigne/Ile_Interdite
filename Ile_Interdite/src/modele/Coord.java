@@ -2,8 +2,8 @@ package modele;
 
 public class Coord {
 
-	public final int absc;
-	public final int ord;
+	private final int absc;
+	private final int ord;
 	
 	public Coord(int absc, int ord) {
 		this.absc = absc;

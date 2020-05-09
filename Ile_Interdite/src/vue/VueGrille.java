@@ -17,7 +17,7 @@ public class VueGrille extends JPanel implements Observer {
     private Ile ile;
     
     /** Définition d'une taille (en pixels) pour l'affichage des cellules. */
-    private final static int TAILLE = 12;
+    private final static int TAILLE = 14;
 	
 	public VueGrille(Ile nouvIle) {
 		this.ile = nouvIle;

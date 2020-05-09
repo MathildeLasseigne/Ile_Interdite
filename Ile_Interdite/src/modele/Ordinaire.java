@@ -15,4 +15,9 @@ public class Ordinaire extends Type{
 	public boolean hasArtefact() {
 		return false;
 	}
+
+	@Override
+	public boolean isSpecial() {
+		return false;
+	}
 }
