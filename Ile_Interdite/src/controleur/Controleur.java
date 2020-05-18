@@ -94,6 +94,7 @@ public class Controleur implements ActionListener {
 						this.grille.update();
 						this.cmds.finTour.setText("Tour suivant");
 						this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
+						JOptionPane.showMessageDialog(null, "Pour effectuer une action, cliquez sur le bouton correspondant puis sur la direction où vous voulez l'appliquer");
 					}
 					
 				} else { //Partie commencee
