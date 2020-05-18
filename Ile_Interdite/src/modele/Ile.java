@@ -81,7 +81,7 @@ public class Ile extends Observable {
 			subCoordList(territoire[c.getOrd()][c.getAbsc()]);
 			territoire[c.getOrd()][c.getAbsc()].inonde();
 			addCoordList(territoire[c.getOrd()][c.getAbsc()]);
-			shore.add(c);
+			shore.add(getCoord(c));
 			cleanShore();
 		}
 		
@@ -101,7 +101,7 @@ public class Ile extends Observable {
 			c = getRandCoordVois();
 		}
 		
-		return c;
+		return getCoord(c);
 	}
 	
 //	/**
@@ -190,7 +190,8 @@ public class Ile extends Observable {
 	 * @param c
 	 * @return
 	 */
-	private boolean estIlot(Coord c) {
+	private boolean estIlot(Coord c1) {
+		Coord c = getCoord(c1);
 		if(submerg.contains(c)) {
 			return false;
 		}
@@ -213,7 +214,8 @@ public class Ile extends Observable {
 	 * @return null si sub == false et c est entouree de zones submergees 
 	 * ou si tous les voisins dispos sont dans la liste d exceptions
 	 */
-	public Coord getVoisin(Coord c, boolean sub, ArrayList<Coord> except) {
+	public Coord getVoisin(Coord c1, boolean sub, ArrayList<Coord> except) {
+		Coord c = getCoord(c1);
 		
 		if(estIlot(c) && sub==false) {
 			return null;
@@ -278,8 +280,8 @@ public class Ile extends Observable {
 		voisins[2] = new Coord(c.getAbsc(), c.getOrd()-1);
 		voisins[3] = new Coord(c.getAbsc()-1, c.getOrd());
 		for(int i=0; i<4; i++) {
-			if(estSurIle(voisins[i])) {
-				vois.add(voisins[i]);
+			if(estSurIle(getCoord(voisins[i]))) {
+				vois.add(getCoord(voisins[i]));
 			}
 		}
 		
@@ -293,7 +295,9 @@ public class Ile extends Observable {
 	 * @param sub true si on garde c2 submergés
 	 * @return
 	 */
-	public boolean estVoisin(Coord c, Coord c2, boolean sub) {
+	public boolean estVoisin(Coord c1, Coord c2b, boolean sub) {
+		Coord c = getCoord(c1);
+		Coord c2 = getCoord(c2b);
 		ArrayList<Coord> vois = getListVoisins(c);
 		if (sub == false) {
 			if( ! submerg.contains(c2)) {
@@ -388,11 +392,41 @@ public class Ile extends Observable {
 	}
 	
 	/**
+	 * Retourne la coord (x,y) en prenant en compte les pointeurs
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public Coord getCoord(int x, int y) {
+		Coord c = new Coord(x, y);
+		if(estSurIle(c)) {
+			return territoire[y][x].getCoord();
+		} else {
+			return c;
+		}
+		
+	}
+	
+	/**
+	 * Retourne la coord en prenant en compte les pointeurs
+	 * @param c
+	 * @return
+	 */
+	public Coord getCoord(Coord c) {
+		if(estSurIle(c)) {
+			return territoire[c.getAbsc()][c.getOrd()].getCoord();
+		} else {
+			return c;
+		}
+	}
+	
+	/**
 	 * Verifie si la zone de coord c est safe
 	 * @param c
 	 * @return
 	 */
-	public boolean isSafe(Coord c) {
+	public boolean isSafe(Coord c1) {
+		Coord c = getCoord(c1);
 		if(estSurIle(c)) {
 			if(getZone(c).estAccessible()) {
 				return true;
@@ -414,7 +448,11 @@ public class Ile extends Observable {
 	}
 	
 	public Coord rangedRandomCoord(int x1, int x2, int y1, int y2) {
-		return new Coord(rangedRandomInt(x1, x2), rangedRandomInt(y1, y2));
+		Coord c = getCoord(new Coord(rangedRandomInt(x1, x2), rangedRandomInt(y1, y2)));
+		if(!estSurIle(c)) {
+			System.out.println("rangedRandomCoord() creation hors ile");
+		}
+		return c;
 	}
 	
 	/**
@@ -465,7 +503,7 @@ public class Ile extends Observable {
 		} else {
 			System.out.println("Ne fait pas partie des secteurs pris en charge");
 		}
-		return c;
+		return getCoord(c);
 	}
 	
 
@@ -515,22 +553,32 @@ public class Ile extends Observable {
 		return isInSector(range, c.getAbsc(), c.getOrd());
 	}
 	
-	public boolean isSubmerged(Coord c) {
+	public boolean isSubmerged(Coord c1) {
+		Coord c = getCoord(c1);
 		if(this.submerg.contains(c) || c==null) {
 			return true;
 		}
 		return false;
 	}
 	
-	public void checkSubmerg() {
+	/**
+	 * Verifie les relations et enregistrements des coord
+	 */
+	public void checkZones() {
 		for(int i=0; i<territoire.length; i++) {
 			for(int j = 0; j<territoire[0].length; j++) {
 				if(! territoire[i][j].estAccessible()) {
 					Coord c = territoire[i][j].getCoord();
+					Coord newC = new Coord(j, i);
 					if(! submerg.contains(c)) {
-						System.out.println("Zone "+c+" non enregistree !");
+						System.out.println("Zone "+territoire[i][j].getCoord()+" non enregistree en Coord "+newC+" !");
 					}
 				}
+			}
+		}
+		for(int i=0; i<this.shore.size(); i++) {
+			if(this.shore.get(i) != getCoord(this.shore.get(i))) {
+				System.out.println(getCoord(this.shore.get(i))+" n'est pas enregistree en tant que shore "+getCoord(this.shore.get(i))+" !");
 			}
 		}
 	}

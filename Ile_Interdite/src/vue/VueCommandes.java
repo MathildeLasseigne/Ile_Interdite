@@ -45,7 +45,7 @@ public class VueCommandes extends JPanel {
 		GridBagConstraints c = new GridBagConstraints();
 		
 		//Ajout Joueurs  Ligne 0
-		nbPlayers = new JLabel("Nb Joueurs : 1 ", JLabel.CENTER);
+		nbPlayers = new JLabel("Nb Joueurs : 0 ", JLabel.CENTER);
 		c.gridx = 1;
 		c.gridy = 0;
 		this.add(nbPlayers, c);
@@ -59,13 +59,13 @@ public class VueCommandes extends JPanel {
 		
 		//Passage de tour  Ligne 1-3
 		int debutTour = 1;
-		idPlayer = new JLabel("Joueur 0 ", JLabel.CENTER);
+		idPlayer = new JLabel("Joueur _ ", JLabel.CENTER);
 		c.gridx = 1;
 		c.gridy = debutTour+1;
 		c.ipady = 40;
 		this.add(idPlayer, c);
 		
-		finTour = new JButton("Tour suivant");
+		finTour = new JButton("Commencer"); //Deviens "Tour suivant" après le debut de la partie
 		c.gridx = 2;
 		c.gridy = debutTour;
 		c.gridheight = 3;

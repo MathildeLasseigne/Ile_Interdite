@@ -87,39 +87,66 @@ public class Controleur implements ActionListener {
 			if(e.getSource() == this.cmds.finTour) {
 				resetEtat();
 				if(debutPartie == false) { //Si la partie n a pas encore commence
-					debutPartie = true;
-					this.grille.initPlayers(this.players.getNbPlayers());
-					this.grille.updatePlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
-				} //Partie commencee
-				//Chercher les cles
-				if ( ! ile.updateIle()) { //Mise a jour de l ile
-					endGame(false);
+					if(this.players.getNbPlayers()>0) { //Si il y a au moins 1 joueur
+						debutPartie = true;
+						this.grille.initPlayers(this.players.getNbPlayers());
+						this.grille.updatePlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+						this.grille.update();
+						this.cmds.finTour.setText("Tour suivant");
+						this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
+					}
+					
+				} else { //Partie commencee
+					//Chercher les cles
+					if ( ! ile.updateIle()) { //Mise a jour de l ile
+						endGame(false);
+					}
+					this.ile.checkZones();
+					this.players.checkPlayers();
+					verifiePlayers(); //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
+					changePlayer();
 				}
-				this.ile.checkSubmerg();
-				this.players.checkPlayers();
-				verifiePlayers(); //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
-				changePlayer();
 			} else if (e.getSource() == this.cmds.addPlayer) {
-				addPlayer();
-			} else if (e.getSource() == this.cmds.move) {  //Actions
-				this.move = true;
-			} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
-				actionPos(Direction.up);
-				resetEtat();
-			} else if (e.getSource() == this.cmds.down) {
-				actionPos(Direction.down);
-				resetEtat();
-			} else if (e.getSource() == this.cmds.center) {
-				actionPos(Direction.center);
-				resetEtat();
-			} else if (e.getSource() == this.cmds.right) {
-				actionPos(Direction.right);
-				resetEtat();
-			} else if (e.getSource() == this.cmds.left) {
-				actionPos(Direction.left);
-				resetEtat();
+				if(debutPartie == false) {
+					addPlayer();
+				}
 			}
-			
+			if(debutPartie) {
+				if (e.getSource() == this.cmds.move) {  //Actions
+					this.move = true;
+				} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
+					actionPos(Direction.up);
+					resetEtat();
+				} else if (e.getSource() == this.cmds.down) {
+					actionPos(Direction.down);
+					resetEtat();
+				} else if (e.getSource() == this.cmds.center) {
+					actionPos(Direction.center);
+					resetEtat();
+				} else if (e.getSource() == this.cmds.right) {
+					actionPos(Direction.right);
+					resetEtat();
+				} else if (e.getSource() == this.cmds.left) {
+					actionPos(Direction.left);
+					resetEtat();
+				}
+				
+			} else {
+				if (e.getSource() == this.cmds.move) {  //Actions
+					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
+				} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
+					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
+				} else if (e.getSource() == this.cmds.down) {
+					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
+				} else if (e.getSource() == this.cmds.center) {
+					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
+				} else if (e.getSource() == this.cmds.right) {
+					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
+				} else if (e.getSource() == this.cmds.left) {
+					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
+				}
+				
+			}
 			
 		} else {
 			JOptionPane.showMessageDialog(null, "La partie est déjà finie !"); //Pour ne pas pouvoir continuer apres la fin
@@ -192,7 +219,6 @@ public class Controleur implements ActionListener {
 			return new Coord(pl.getAbsc()+1, pl.getOrd());
 		}
 		return null;
-		
 	}
 	
 	/**

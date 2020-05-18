@@ -17,7 +17,7 @@ public class Players {
 	public Players() {
 		nbPlayers = 0;
 		activePlayer = 0;
-		addPlayer(new Coord (4,4));
+		//addPlayer(new Coord (4,4));
 	}
 
 	/**
