@@ -26,7 +26,7 @@ public class Ile extends Observable {
 	
 	private Coord heliport;
 	
-	public static final int HAUTEUR=40, LARGEUR=40;
+	public static final int HAUTEUR=20, LARGEUR=20;
 	/**
 	 * Le nombre de coordonnees utilisees par l ile (ile+cadre)
 	 */
@@ -36,9 +36,13 @@ public class Ile extends Observable {
 		initialize();
 	}
 	
+	/**
+	 * Met a jour l ile en l inondant
+	 * @return
+	 */
 	public boolean updateIle() {
 		notifyObservers();
-		return inonde(30);
+		return inonde(15);
 		
 	}
 	
@@ -49,7 +53,7 @@ public class Ile extends Observable {
 		territoire = new Zone[HAUTEUR][LARGEUR];
 		for (int i = 0; i<HAUTEUR; i++) {
 			for(int j = 0; j < LARGEUR; j++) {
-				territoire[i][j] = new Zone(new Coord(i,j));
+				territoire[i][j] = new Zone(new Coord(j,i));
 			}
 		}
 		submerg = getCadre(); //Considere les coordonnees hors de l'ile comme submergees
@@ -92,7 +96,7 @@ public class Ile extends Observable {
 		int rand = rangedRandomInt(0, shore.size()-1);
 		Coord c;
 		
-		c = getVoisin(shore.get(rand), false);
+		c = getVoisin(shore.get(rand), false, null);
 		if (c==null) {
 			c = getRandCoordVois();
 		}
@@ -200,13 +204,16 @@ public class Ile extends Observable {
 		return isIlot;
 	}
 	
+
 	/**
 	 * Renvoie une coordonnée adjacente à c
 	 * @param c 
 	 * @param sub true si on garde les voisins submergés
-	 * @return null si sub == false et c est entouree de zones submergees
+	 * @param except La liste des voisins a ne pas prendre (peut etre null)
+	 * @return null si sub == false et c est entouree de zones submergees 
+	 * ou si tous les voisins dispos sont dans la liste d exceptions
 	 */
-	public Coord getVoisin(Coord c, boolean sub) {
+	public Coord getVoisin(Coord c, boolean sub, ArrayList<Coord> except) {
 		
 		if(estIlot(c) && sub==false) {
 			return null;
@@ -214,22 +221,55 @@ public class Ile extends Observable {
 		
 		ArrayList<Coord> voisList = getListVoisins(c);
 		
+		if(except != null) {  //Verifie s il est possible d avoir un voisin en prenant en compte except
+			int voisinsDisp = 0;
+			for(Coord cVois : voisList) {
+				if(! except.contains(cVois)) {
+					voisinsDisp++;
+				}
+			}
+			if(voisinsDisp == 0) {
+				return null;
+			}
+		}
+		
+		
 		Coord vois = null;
 		boolean valid = false;
 		
 		while (valid == false) {
 			vois = voisList.get(rangedRandomInt(0,voisList.size()-1));
 			if (sub == false) {
-				if(! submerg.contains(vois)) {
+				if(except != null) {
+					if((! submerg.contains(vois)) && (! except.contains(vois))) {
+						valid = true;
+					}
+				} else {
+					if(! submerg.contains(vois)) {
+						valid = true;
+					}
+				}
+				
+			} else {
+				if(except != null) {
+					if(! except.contains(vois)) {
+						valid = true;
+					}
+				} else {
 					valid = true;
 				}
-			} else {
-				valid = true;
 			}
 		}
 		return vois;
 	}
 	
+	
+	
+	/**
+	 * Recuperer la liste des coord adjacentes a la coord c
+	 * @param c
+	 * @return
+	 */
 	private ArrayList<Coord> getListVoisins(Coord c){
 		ArrayList<Coord> vois = new ArrayList<>();
 		Coord[] voisins = new Coord[4];
@@ -257,10 +297,10 @@ public class Ile extends Observable {
 		ArrayList<Coord> vois = getListVoisins(c);
 		if (sub == false) {
 			if( ! submerg.contains(c2)) {
-				return vois.contains(c2);
+				return vois.contains(c2) && estSurIle(c2);
 			}
 		} else {
-			return vois.contains(c2);
+			return vois.contains(c2) && estSurIle(c2);
 		}
 		return false;
 	}
@@ -344,7 +384,7 @@ public class Ile extends Observable {
 	 * @return
 	 */
 	public Zone getZone(int x, int y) {
-		return territoire[x][y];
+		return territoire[y][x];
 	}
 	
 	/**
@@ -353,8 +393,10 @@ public class Ile extends Observable {
 	 * @return
 	 */
 	public boolean isSafe(Coord c) {
-		if(getZone(c).estAccessible()) {
-			return true;
+		if(estSurIle(c)) {
+			if(getZone(c).estAccessible()) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -473,6 +515,25 @@ public class Ile extends Observable {
 		return isInSector(range, c.getAbsc(), c.getOrd());
 	}
 	
+	public boolean isSubmerged(Coord c) {
+		if(this.submerg.contains(c) || c==null) {
+			return true;
+		}
+		return false;
+	}
+	
+	public void checkSubmerg() {
+		for(int i=0; i<territoire.length; i++) {
+			for(int j = 0; j<territoire[0].length; j++) {
+				if(! territoire[i][j].estAccessible()) {
+					Coord c = territoire[i][j].getCoord();
+					if(! submerg.contains(c)) {
+						System.out.println("Zone "+c+" non enregistree !");
+					}
+				}
+			}
+		}
+	}
 	
 	
 	

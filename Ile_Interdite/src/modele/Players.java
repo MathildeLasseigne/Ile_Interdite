@@ -15,6 +15,7 @@ public class Players {
 	public final int totalActions = 3;
 	
 	public Players() {
+		nbPlayers = 0;
 		activePlayer = 0;
 		addPlayer(new Coord (4,4));
 	}
@@ -34,10 +35,12 @@ public class Players {
 		actionsRestantes = totalActions;
 	}
 	
-	public void play() {
+	public boolean play() {
 		if (actionsRestantes>0) {
 			actionsRestantes--;
+			return true;
 		}
+		return false;
 	}
 	
 	/**
@@ -66,11 +69,13 @@ public class Players {
 	}
 	
 	public boolean move(Coord c) {
-		if(! playersCoord.contains(c) && actionsRestantes > 0) {
-			playersList.get(activePlayer).move(c);
-			playersCoord.set(activePlayer, c);
-			actionsRestantes--;
-			return true;
+		if(! playersCoord.contains(c)) {
+			if(actionsRestantes > 0) {
+				playersList.get(activePlayer).move(c);
+				playersCoord.set(activePlayer, c);
+				actionsRestantes--;
+				return true;
+			}
 		}
 		return false;
 	}
@@ -94,10 +99,13 @@ public class Players {
 	 * @param cSafe Une coord voisine safe du joueur prise au hasard. Si cSafe == null, le joueur meurs
 	 */
 	public void savePlayer(Coord cP, Coord cSafe) {
+		SinglePlayer p = getPlayer(cP);
 		if (cSafe != null) {
-			getPlayer(cP).move(cSafe);
+			p.move(cSafe);
+			playersCoord.set(p.getId(), cSafe);
+			
 		} else {
-			diePlayer(getPlayer(cP).getId());
+			diePlayer(p.getId());
 		}
 	}
 	
@@ -154,10 +162,48 @@ public class Players {
 	}
 	
 	/**
+	 * Renvoie le nb de players
+	 * @return
+	 */
+	public int getNbPlayers() {
+		return nbPlayers;
+	}
+	
+	public ArrayList<Coord> getCoordPlayersAlive(){
+		ArrayList<Coord> lc = new ArrayList<>();
+		for(int i=0; i<nbPlayers; i++) {
+			if(! this.deadPlayersList.contains(i)) {
+				lc.add(this.playersCoord.get(i));
+			}
+		}
+		return lc;
+	}
+	
+	public ArrayList<Integer> getIdPlayersAlive(){
+		ArrayList<Integer> lId = new ArrayList<>();
+		for(int i=0; i<nbPlayers; i++) {
+			if(! this.deadPlayersList.contains(i)) {
+				lId.add(i);
+			}
+		}
+		return lId;
+	}
+	
+	
+	
+	/**
 	 * Retourne le nombre d actions restantes du joueur actif
 	 * @return
 	 */
 	public int getActionsRes() {
 		return this.actionsRestantes;
+	}
+	
+	public void checkPlayers() {
+		for(SinglePlayer p : playersList) {
+			if(! this.playersCoord.contains(p.getCoord())) {
+				System.out.println(p+ " n'est pas enregistre !");
+			}
+		}
 	}
 }

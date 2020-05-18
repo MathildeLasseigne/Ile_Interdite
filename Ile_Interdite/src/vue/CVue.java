@@ -7,6 +7,7 @@ import javax.swing.*;
 
 import controleur.Controleur;
 import modele.Ile;
+import modele.Players;
 public class CVue {
 	 
 	/**
@@ -35,7 +36,7 @@ public class CVue {
     
 	
     /** Construction d'une vue attachée à un modèle. */
-    public CVue(Ile ile) {
+    public CVue(Ile ile, Players players) {
 	/** Définition de la fenêtre principale. */
 	frame = new JFrame();
 	frame.setTitle("L Ile interdite");
@@ -56,15 +57,16 @@ public class CVue {
 	 */
 	frame.setLayout(new FlowLayout());
 	
-	ctrl = new Controleur(ile);
+	ctrl = new Controleur(ile, players);
 
 	/** Définition des deux vues et ajout à la fenêtre. */
-	grille = new VueGrille(ile);
+	grille = new VueGrille(ile, players);
 	frame.add(grille);
+	ctrl.setGrille(grille);
 	commandes = new VueCommandes(ctrl);
 	frame.add(commandes);
-	positionnement = new VuePositionnement(ctrl);
-	frame.add(positionnement);
+//	positionnement = new VuePositionnement(ctrl);
+//	frame.add(positionnement);
 	/**
 	 * Remarque : on peut passer à la méthode [add] des paramètres
 	 * supplémentaires indiquant où placer l'élément. Par exemple, si on

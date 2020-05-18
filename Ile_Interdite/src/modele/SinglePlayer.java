@@ -27,5 +27,9 @@ public class SinglePlayer {
 		this.coord = c;
 	}
 	
+	public String toString() {
+		return "Joueur "+this.id;
+	}
+	
 	
 }

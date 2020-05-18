@@ -10,13 +10,17 @@ import modele.Direction;
 import modele.Ile;
 import modele.Players;
 import vue.VueCommandes;
+import vue.VueGrille;
+import vue.VuePositionnement;
 
 public class Controleur implements ActionListener {
 	
 	private Ile ile;
 	private Players players;
 	
+	/**JPannels**/
 	private VueCommandes cmds;
+	private VueGrille grille;
 	
 	/**Heliport**/
 	
@@ -24,17 +28,23 @@ public class Controleur implements ActionListener {
 	private ArrayList<Integer> playersOnHeli = new ArrayList<>();
 	private Coord heliport;
 	
-	/** JButtons **/
-	private JButton B_ile;
-	private JButton add_players;
 	
 	/** Etats **/
 	private boolean debutPartie;
 	private boolean partieFinie;
 	
+	private boolean move;
+	private boolean asseche;
+	private boolean searchArtefacts;
 	
-	public Controleur(Ile ile) {
+	/**
+	 * Cree un controleur gerant la partie
+	 * @param ile Le modele de l ile
+	 * @param players La liste des joueurs
+	 */
+	public Controleur(Ile ile, Players players) {
 		this.ile = ile;
+		this.players = players;
 		init();
 	}
 	
@@ -52,27 +62,21 @@ public class Controleur implements ActionListener {
 		//Etats
 		debutPartie = false;
 		partieFinie = false;
+		move = false;
+		asseche = false;
+		searchArtefacts = false;
 	}
 	
 	
-	/**
-	 * Enregistre les boutons dans le controleur :
-	 * </br> Numero 1 : ile_inonde 
-	 * </br> Numero 2 : add_players 
-	 * @param x le numero du bouton
-	 * @param button
-	 */
-	public void setButton(int x, JButton button) {
-		if (x == 1) {
-			this.B_ile = button;
-		} else if (x == 2) {
-			this.add_players = button;
-		}
-	}
-	
+	//Link JPannels
 	public void setCommandes(VueCommandes cmd) {
 			this.cmds = cmd;
 	}
+	
+	public void setGrille(VueGrille grille) {
+		this.grille = grille;
+	}
+	
 	
 	
 
@@ -80,20 +84,45 @@ public class Controleur implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(! partieFinie) {
-			if(e.getSource() == B_ile) {
+			if(e.getSource() == this.cmds.finTour) {
 				resetEtat();
-				if(debutPartie == false) {
+				if(debutPartie == false) { //Si la partie n a pas encore commence
 					debutPartie = true;
+					this.grille.initPlayers(this.players.getNbPlayers());
+					this.grille.updatePlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+				} //Partie commencee
+				//Chercher les cles
+				if ( ! ile.updateIle()) { //Mise a jour de l ile
+					endGame(false);
 				}
-				if ( ! ile.updateIle()) {
-					JOptionPane.showMessageDialog(null, "Vous avez perdu !");
-				}
+				this.ile.checkSubmerg();
+				this.players.checkPlayers();
+				verifiePlayers(); //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
 				changePlayer();
-			} else if (e.getSource() == add_players) {
+			} else if (e.getSource() == this.cmds.addPlayer) {
 				addPlayer();
+			} else if (e.getSource() == this.cmds.move) {  //Actions
+				this.move = true;
+			} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
+				actionPos(Direction.up);
+				resetEtat();
+			} else if (e.getSource() == this.cmds.down) {
+				actionPos(Direction.down);
+				resetEtat();
+			} else if (e.getSource() == this.cmds.center) {
+				actionPos(Direction.center);
+				resetEtat();
+			} else if (e.getSource() == this.cmds.right) {
+				actionPos(Direction.right);
+				resetEtat();
+			} else if (e.getSource() == this.cmds.left) {
+				actionPos(Direction.left);
+				resetEtat();
 			}
+			
+			
 		} else {
-			JOptionPane.showMessageDialog(null, "Partie finie !"); //En faire une fonction
+			JOptionPane.showMessageDialog(null, "La partie est déjà finie !"); //Pour ne pas pouvoir continuer apres la fin
 		}
 		
 	}
@@ -107,16 +136,39 @@ public class Controleur implements ActionListener {
 	 * Remet les booleans des etat a false
 	 */
 	private void resetEtat() {
-		
+		if(move) {
+			selectJButton(this.cmds.move);
+			move = false;
+		}
+		if(asseche) {
+			//selectJButton(this.cmds.move);
+			asseche = false;
+		}
+		if(searchArtefacts) {
+			//selectJButton(this.cmds.move);
+			searchArtefacts = false;
+		}
 	}
 	
 	
 	/**
 	 * Pour chaque player, verifie si ils sont safe et sinon les sauver.
+	 * </br> Verifie aussi si un player mort n avait pas d artefact
 	 * </br> Peut aussi etre utilise pour la victoire
 	 */
 	private void verifiePlayers() {
-		
+		for(Coord c : this.players.getCoordPlayersAlive()) {
+			if(! this.ile.isSafe(c)) {
+				Coord safeC = this.ile.getVoisin(c, false, this.players.getCoordPlayersAlive());
+				this.players.savePlayer(c, safeC);
+				this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+				System.out.println("Old c :"+this.ile.isSubmerged(c));
+				System.out.println("New c :"+this.ile.isSubmerged(safeC));
+			}
+		}
+		if(this.players.getNbPlayersAlive()==0) {
+			endGame(false);
+		}
 	}
 	
 	/**
@@ -131,11 +183,11 @@ public class Controleur implements ActionListener {
 		if(d == Direction.center) {
 			return pl;
 		} else if (d == Direction.down) {
-			return new Coord(pl.getAbsc(), pl.getOrd()-1);
+			return new Coord(pl.getAbsc(), pl.getOrd()+1);
 		} else if (d == Direction.left) {
 			return new Coord(pl.getAbsc()-1, pl.getOrd());
 		} else if (d == Direction.up) {
-			return new Coord(pl.getAbsc(), pl.getOrd()+1);
+			return new Coord(pl.getAbsc(), pl.getOrd()-1);
 		} else if (d == Direction.right) {
 			return new Coord(pl.getAbsc()+1, pl.getOrd());
 		}
@@ -147,17 +199,72 @@ public class Controleur implements ActionListener {
 	 */
 	private void addPlayer() {
 		if(debutPartie == false) {
-			players.addPlayer(ile.getRandCoord(3));
-//			while (! players.addPlayer(ile.getRandCoord(3))) {
-//				addPlayer();
-//			}
+			Coord c = ile.getRandCoord(3);
+			while (! players.addPlayer(c)) {
+				addPlayer();
+			}
+			this.cmds.changeNbPlayer(players.getNbPlayersAlive());
 		}
 		
 	}
 	
+	
+	/**
+	 * Change le player actif et son affichage
+	 */
 	private void changePlayer() {
 		players.changePlayer();
 		this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
+	}
+	
+	
+	/**
+	 * Effectue l action correspondante en fonction des etats
+	 * @param dir
+	 */
+	private void actionPos(Direction dir) {
+		Coord newC = getCoordDir(dir);
+		if(this.move) {
+			if(this.ile.isSafe(newC)) {
+				if(! this.players.move(newC)) {
+					JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !");
+				} else {
+					this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+					//this.grille.update();
+					this.cmds.updateActionsPlayer(this.players.getActionsRes());
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, "Cette zone n'est pas accessible !");
+			}
+			
+		}
+	}
+	
+	
+	
+	/**
+	 * Affiche le message de fin de partie
+	 * @param win Partie gagnee ?
+	 */
+	private void endGame(boolean win) {
+		if(win) {
+			JOptionPane.showMessageDialog(null, "Félicitation ! Vous avez gagné !");
+		} else {
+			if(this.players.getNbPlayersAlive() != this.players.getNbPlayers()) {
+				int dead = this.players.getNbPlayers()-this.players.getNbPlayersAlive();
+				JOptionPane.showMessageDialog(null, "Vous avez perdu ! "+dead+" joueurs sont morts !");
+			}
+			JOptionPane.showMessageDialog(null, "Vous avez perdu !");
+		}
+		this.partieFinie = true;
+	}
+	
+	/**
+	 * Donne au bouton une apparence activee/desactivee
+	 * @param button
+	 */
+	private void selectJButton(JButton button) {
+		//https://openclassrooms.com/fr/courses/26832-apprenez-a-programmer-en-java/23727-interagissez-avec-des-boutons
 	}
 
 }

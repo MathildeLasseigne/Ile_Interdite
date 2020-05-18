@@ -5,8 +5,10 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import modele.Coord;
 import modele.Etat;
 import modele.Ile;
+import modele.Players;
 import modele.Zone;
 import observateur.Observer;
 
@@ -15,14 +17,25 @@ public class VueGrille extends JPanel implements Observer {
 	
 	/** On maintient une référence vers le modèle. */
     private Ile ile;
+    private Players players;
+    
+    /**Liste players**/
+    private ArrayList<Coord> coordPlayersAlive = new ArrayList<>();
+    private ArrayList<Integer> idPlayersAlive = new ArrayList<>();
+    private int nbPlayers;
+    private ArrayList<JLabel> charaPlayers = new ArrayList<>();
+    
     
     /** Définition d'une taille (en pixels) pour l'affichage des cellules. */
-    private final static int TAILLE = 14;
+    private final static int TAILLE = 30;
 	
-	public VueGrille(Ile nouvIle) {
+	public VueGrille(Ile nouvIle, Players players) {
 		this.ile = nouvIle;
+		this.players = players;
 		/** On enregistre la vue [this] en tant qu'observateur de [modele]. */
 		ile.addObserver(this);
+		
+		this.setLayout(null);
 		/**
 		 * Définition et application d'une taille fixe pour cette zone de
 		 * l'interface, calculée en fonction du nombre de cellules et de la
@@ -31,11 +44,18 @@ public class VueGrille extends JPanel implements Observer {
 		Dimension dim = new Dimension(TAILLE*Ile.LARGEUR,
 					      TAILLE*Ile.HAUTEUR);
 		this.setPreferredSize(dim);
+		
+//		JLabel player1 = new JLabel("1", JLabel.CENTER);
+//		this.add(player1);
+//		player1.setLocation(3*TAILLE, 4*TAILLE);
+//		player1.setSize(TAILLE, TAILLE);
+		
 	}
 
 	@Override
 	public void update() {
 		repaint();
+		paintPlayers();
 	}
 	
 	/**
@@ -49,8 +69,8 @@ public class VueGrille extends JPanel implements Observer {
     public void paintComponent(Graphics g) {
 	super.repaint();
 	/** Pour chaque cellule... */
-		for(int i=0; i<Ile.LARGEUR; i++) {
-		    for(int j=0; j<Ile.HAUTEUR; j++) {
+		for(int i=0; i<Ile.HAUTEUR; i++) {
+		    for(int j=0; j<Ile.LARGEUR; j++) {
 			/**
 			 * ... Appeler une fonction d'affichage auxiliaire.
 			 * On lui fournit les informations de dessin [g] et les
@@ -80,5 +100,57 @@ public class VueGrille extends JPanel implements Observer {
         /** Coloration d'un rectangle. */
         g.fillRect(x, y, TAILLE, TAILLE);
     }
+    
+    /**
+     * Deplace les JLabels des players
+     */
+    private void paintPlayers() {
+    	for(int i = 0; i<this.charaPlayers.size(); i++) {
+    		if(this.idPlayersAlive.contains(i)) {
+    			int idx = this.idPlayersAlive.indexOf(i);
+    			Coord c = this.coordPlayersAlive.get(idx);
+    			this.charaPlayers.get(i).setLocation(c.getAbsc()*TAILLE, c.getOrd()*TAILLE);
+    		}
+    	}
+    }
+    
+    /**
+     * Met a jour les coord des players et les affiche sur la grille
+     * @param coord Les coordonnees des joueurs vivants
+     * @param id Leur id
+     */
+    public void repaintPlayers(ArrayList<Coord> coord, ArrayList<Integer> id) {
+    	updatePlayers(coord, id);
+    	paintPlayers();
+    }
+    
+    /**
+     * Initialise l'affichage des players
+     * @param nbPlayers le nb total de players
+     */
+    public void initPlayers(int nbPlayers) {
+    	for(int i = 0; i<nbPlayers; i++) {
+    		this.charaPlayers.add(new JLabel(String.valueOf(i), JLabel.CENTER));
+    		this.add(this.charaPlayers.get(i));
+    		this.charaPlayers.get(i).setVisible(true);
+    		this.charaPlayers.get(i).setSize(TAILLE, TAILLE);
+    	}
+    }
+    
+    /**
+     * Met a jour la liste des joueurs vivants à afficher
+     * @param coord Les coordonnees des joueurs vivants
+     * @param id Leur id
+     */
+    public void updatePlayers(ArrayList<Coord> coord, ArrayList<Integer> id) {
+    	this.coordPlayersAlive = coord;
+    	this.idPlayersAlive = id;
+    	for(int i=0; i<this.charaPlayers.size();i++) {
+    		if( (! this.idPlayersAlive.contains(i)) && (this.charaPlayers.get(i).isVisible() )) {
+    			this.charaPlayers.get(i).setVisible(false);
+    		}
+    	}
+    }
+    
 
 }

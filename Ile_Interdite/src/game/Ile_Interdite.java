@@ -3,6 +3,7 @@ package game;
 import java.awt.EventQueue;
 
 import modele.Ile;
+import modele.Players;
 import vue.CVue;
 
 public class Ile_Interdite {
@@ -22,7 +23,8 @@ public class Ile_Interdite {
 	EventQueue.invokeLater(() -> {
 		/** Voici le contenu qui nous intéresse. */
                 Ile ile = new Ile();
-                CVue vue = new CVue(ile);
+                Players players = new Players();
+                CVue vue = new CVue(ile, players);
 	    });
     }
 
