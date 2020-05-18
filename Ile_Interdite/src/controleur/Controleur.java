@@ -192,6 +192,7 @@ public class Controleur implements ActionListener {
 			return new Coord(pl.getAbsc()+1, pl.getOrd());
 		}
 		return null;
+		
 	}
 	
 	/**

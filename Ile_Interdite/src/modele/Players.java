@@ -200,6 +200,9 @@ public class Players {
 	}
 	
 	public void checkPlayers() {
+		if(this.playersCoord.isEmpty()) {
+			System.out.println("Aucune coord de players enregistree !");
+		}
 		for(SinglePlayer p : playersList) {
 			if(! this.playersCoord.contains(p.getCoord())) {
 				System.out.println(p+ " n'est pas enregistre !");
