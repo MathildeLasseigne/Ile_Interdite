@@ -94,5 +94,9 @@ public class Zone {
 		return this.type;
 	}
 	
+	protected void setType(Type type) {
+		this.type = type;
+	}
+	
 	
 }

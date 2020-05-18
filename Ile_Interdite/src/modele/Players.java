@@ -15,9 +15,9 @@ public class Players {
 	public final int totalActions = 3;
 	
 	public Players() {
+		actionsRestantes = 3;
 		nbPlayers = 0;
 		activePlayer = 0;
-		//addPlayer(new Coord (4,4));
 	}
 
 	/**
@@ -199,6 +199,10 @@ public class Players {
 		return this.actionsRestantes;
 	}
 	
+	/**
+	 * Verifie les relations et enregistrements des coord
+	 * </br> <b>Methode de test<b>
+	 */
 	public void checkPlayers() {
 		if(this.playersCoord.isEmpty()) {
 			System.out.println("Aucune coord de players enregistree !");

@@ -94,7 +94,11 @@ public class Controleur implements ActionListener {
 						this.grille.update();
 						this.cmds.finTour.setText("Tour suivant");
 						this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
-						JOptionPane.showMessageDialog(null, "Pour effectuer une action, cliquez sur le bouton correspondant puis sur la direction où vous voulez l'appliquer");
+						String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant \n puis sur la direction où vous voulez l'appliquer.\n";
+						String str2 = "Vous pouvez effectuer 3 actions en 1 tour.";
+						JOptionPane.showMessageDialog(null, str1+str2);
+					} else {
+						JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
 					}
 					
 				} else { //Partie commencee
@@ -104,8 +108,9 @@ public class Controleur implements ActionListener {
 					}
 					this.ile.checkZones();
 					this.players.checkPlayers();
-					verifiePlayers(); //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
+					 //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
 					changePlayer();
+					verifiePlayers();
 				}
 			} else if (e.getSource() == this.cmds.addPlayer) {
 				if(debutPartie == false) {
@@ -114,26 +119,27 @@ public class Controleur implements ActionListener {
 			}
 			if(debutPartie) {
 				if (e.getSource() == this.cmds.move) {  //Actions
+					resetEtat();
 					this.move = true;
+				} else if (e.getSource() == this.cmds.asseche) { //Actions de positionnement
+					resetEtat();
+					this.asseche = true;
 				} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
 					actionPos(Direction.up);
-					resetEtat();
 				} else if (e.getSource() == this.cmds.down) {
 					actionPos(Direction.down);
-					resetEtat();
 				} else if (e.getSource() == this.cmds.center) {
 					actionPos(Direction.center);
-					resetEtat();
 				} else if (e.getSource() == this.cmds.right) {
 					actionPos(Direction.right);
-					resetEtat();
 				} else if (e.getSource() == this.cmds.left) {
 					actionPos(Direction.left);
-					resetEtat();
 				}
 				
 			} else {
 				if (e.getSource() == this.cmds.move) {  //Actions
+					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
+				} else if (e.getSource() == this.cmds.asseche) { //Actions de positionnement
 					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
 				} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
 					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
@@ -161,7 +167,7 @@ public class Controleur implements ActionListener {
 	
 	
 		/**
-	 * Remet les booleans des etat a false
+	 * Remet les booleans des etat commandant les actions a false
 	 */
 	private void resetEtat() {
 		if(move) {
@@ -251,20 +257,32 @@ public class Controleur implements ActionListener {
 	 * @param dir
 	 */
 	private void actionPos(Direction dir) {
-		Coord newC = getCoordDir(dir);
-		if(this.move) {
-			if(this.ile.isSafe(newC)) {
-				if(! this.players.move(newC)) {
-					JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !");
+		if(this.players.getActionsRes()==0) {
+			JOptionPane.showMessageDialog(null, "Il ne vous reste plus d'action !");
+		} else {
+			Coord newC = getCoordDir(dir);
+			if(this.move) {
+				if(this.ile.isSafe(newC)) {
+					if(! this.players.move(newC)) {
+						JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !");
+					} else {
+						this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+						//this.grille.update();
+						this.cmds.updateActionsPlayer(this.players.getActionsRes());
+					}
 				} else {
-					this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
-					//this.grille.update();
-					this.cmds.updateActionsPlayer(this.players.getActionsRes());
+					JOptionPane.showMessageDialog(null, "Cette zone n'est pas accessible !");
 				}
-			} else {
-				JOptionPane.showMessageDialog(null, "Cette zone n'est pas accessible !");
+				
+			} else if (this.asseche) {
+				if(! this.ile.asseche(newC)) {
+					JOptionPane.showMessageDialog(null, "Vous ne pouvez pas assécher cette zone !");
+				} else {
+					this.players.play();
+					this.cmds.updateActionsPlayer(this.players.getActionsRes());
+					this.grille.update();
+				}
 			}
-			
 		}
 	}
 	
@@ -276,13 +294,21 @@ public class Controleur implements ActionListener {
 	 */
 	private void endGame(boolean win) {
 		if(win) {
-			JOptionPane.showMessageDialog(null, "Félicitation ! Vous avez gagné !");
+			
+			if(this.players.getNbPlayersAlive() != this.players.getNbPlayers()) {
+				int dead = this.players.getNbPlayers()-this.players.getNbPlayersAlive();
+				JOptionPane.showMessageDialog(null, "Vous avez gagné !\n Mais vous avez laissé "+dead+" joueurs derrière vous ! \n Monstres ! Q_Q");
+			} else {
+				JOptionPane.showMessageDialog(null, "Félicitation ! Vous avez gagné !");
+			}
 		} else {
 			if(this.players.getNbPlayersAlive() != this.players.getNbPlayers()) {
 				int dead = this.players.getNbPlayers()-this.players.getNbPlayersAlive();
 				JOptionPane.showMessageDialog(null, "Vous avez perdu ! "+dead+" joueurs sont morts !");
+			} else {
+				JOptionPane.showMessageDialog(null, "Vous avez perdu !");
 			}
-			JOptionPane.showMessageDialog(null, "Vous avez perdu !");
+			
 		}
 		this.partieFinie = true;
 	}

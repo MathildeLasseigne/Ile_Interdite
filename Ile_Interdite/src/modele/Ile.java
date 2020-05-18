@@ -25,6 +25,7 @@ public class Ile extends Observable {
 	private ArrayList<Coord> shore = new ArrayList<>();
 	
 	private Coord heliport;
+	ArrayList<Coord> artefacts = new ArrayList<>();
 	
 	public static final int HAUTEUR=20, LARGEUR=20;
 	/**
@@ -59,6 +60,16 @@ public class Ile extends Observable {
 		submerg = getCadre(); //Considere les coordonnees hors de l'ile comme submergees
 		initShore();
 		nbCoord = (HAUTEUR*LARGEUR)+getCadre().size();
+		
+		
+		for(int element = 0; element<4; element++) {
+			Coord cArt = getRandCoord(5);
+			while(artefacts.contains(cArt)) {
+				cArt = getRandCoord(5);
+			}
+			artefacts.add(cArt);
+			getZone(cArt).setType(new Artefact(element));
+		}
 	}
 	
 	
@@ -81,7 +92,7 @@ public class Ile extends Observable {
 			subCoordList(territoire[c.getOrd()][c.getAbsc()]);
 			territoire[c.getOrd()][c.getAbsc()].inonde();
 			addCoordList(territoire[c.getOrd()][c.getAbsc()]);
-			shore.add(getCoord(c));
+			shore.add(c);
 			cleanShore();
 		}
 		
@@ -101,7 +112,7 @@ public class Ile extends Observable {
 			c = getRandCoordVois();
 		}
 		
-		return getCoord(c);
+		return c;
 	}
 	
 //	/**
@@ -131,7 +142,16 @@ public class Ile extends Observable {
 	 * @return true si la zone a pu etre assechee
 	 */
 	public boolean asseche(Coord c) {
-		return territoire[c.getOrd()][c.getAbsc()].asseche();
+		if(! estSurIle(c)) {
+			return false;
+		}
+		Zone z = getZone(c);
+		boolean result = z.asseche();
+		if(result) {
+			subCoordList(z);
+			cleanShore();
+		}
+		return result;	
 	}
 	
 	
@@ -191,7 +211,7 @@ public class Ile extends Observable {
 	 * @return
 	 */
 	private boolean estIlot(Coord c1) {
-		Coord c = getCoord(c1);
+		Coord c = c1;
 		if(submerg.contains(c)) {
 			return false;
 		}
@@ -215,7 +235,7 @@ public class Ile extends Observable {
 	 * ou si tous les voisins dispos sont dans la liste d exceptions
 	 */
 	public Coord getVoisin(Coord c1, boolean sub, ArrayList<Coord> except) {
-		Coord c = getCoord(c1);
+		Coord c = c1;
 		
 		if(estIlot(c) && sub==false) {
 			return null;
@@ -280,8 +300,8 @@ public class Ile extends Observable {
 		voisins[2] = new Coord(c.getAbsc(), c.getOrd()-1);
 		voisins[3] = new Coord(c.getAbsc()-1, c.getOrd());
 		for(int i=0; i<4; i++) {
-			if(estSurIle(getCoord(voisins[i]))) {
-				vois.add(getCoord(voisins[i]));
+			if(estSurIle(voisins[i])) {
+				vois.add(voisins[i]);
 			}
 		}
 		
@@ -296,8 +316,8 @@ public class Ile extends Observable {
 	 * @return
 	 */
 	public boolean estVoisin(Coord c1, Coord c2b, boolean sub) {
-		Coord c = getCoord(c1);
-		Coord c2 = getCoord(c2b);
+		Coord c = c1;
+		Coord c2 = c2b;
 		ArrayList<Coord> vois = getListVoisins(c);
 		if (sub == false) {
 			if( ! submerg.contains(c2)) {
@@ -321,6 +341,12 @@ public class Ile extends Observable {
 					isShore = true;
 				}
 			}
+			if(estSurIle(this.shore.get(i))) {
+				if(getZone(this.shore.get(i)).getEtat() == Etat.normale) {
+					isShore = false;
+				}
+			}
+			
 			if(isShore == false) {
 				this.shore.remove(i); 
 				//Si la coord n a pas au moins un voisin accessible, l enlever de la liste shore
@@ -391,34 +417,34 @@ public class Ile extends Observable {
 		return territoire[y][x];
 	}
 	
-	/**
-	 * Retourne la coord (x,y) en prenant en compte les pointeurs
-	 * @param x
-	 * @param y
-	 * @return
-	 */
-	public Coord getCoord(int x, int y) {
-		Coord c = new Coord(x, y);
-		if(estSurIle(c)) {
-			return territoire[y][x].getCoord();
-		} else {
-			return c;
-		}
-		
-	}
-	
-	/**
-	 * Retourne la coord en prenant en compte les pointeurs
-	 * @param c
-	 * @return
-	 */
-	public Coord getCoord(Coord c) {
-		if(estSurIle(c)) {
-			return territoire[c.getAbsc()][c.getOrd()].getCoord();
-		} else {
-			return c;
-		}
-	}
+//	/**
+//	 * Retourne la coord (x,y) en prenant en compte les pointeurs
+//	 * @param x
+//	 * @param y
+//	 * @return
+//	 */
+//	public Coord getCoord(int x, int y) {
+//		Coord c = new Coord(x, y);
+//		if(estSurIle(c)) {
+//			return territoire[y][x].getCoord();
+//		} else {
+//			return c;
+//		}
+//		
+//	}
+//	
+//	/**
+//	 * Retourne la coord en prenant en compte les pointeurs
+//	 * @param c
+//	 * @return
+//	 */
+//	public Coord getCoord(Coord c) {
+//		if(estSurIle(c)) {
+//			return territoire[c.getAbsc()][c.getOrd()].getCoord();
+//		} else {
+//			return c;
+//		}
+//	}
 	
 	/**
 	 * Verifie si la zone de coord c est safe
@@ -426,7 +452,7 @@ public class Ile extends Observable {
 	 * @return
 	 */
 	public boolean isSafe(Coord c1) {
-		Coord c = getCoord(c1);
+		Coord c = c1;
 		if(estSurIle(c)) {
 			if(getZone(c).estAccessible()) {
 				return true;
@@ -447,8 +473,16 @@ public class Ile extends Observable {
 		return randomValue;
 	}
 	
+	/**
+	 * Recupere une coord random tant qu elle est sur l ile
+	 * @param x1
+	 * @param x2
+	 * @param y1
+	 * @param y2
+	 * @return
+	 */
 	public Coord rangedRandomCoord(int x1, int x2, int y1, int y2) {
-		Coord c = getCoord(new Coord(rangedRandomInt(x1, x2), rangedRandomInt(y1, y2)));
+		Coord c = new Coord(rangedRandomInt(x1, x2), rangedRandomInt(y1, y2));
 		if(!estSurIle(c)) {
 			System.out.println("rangedRandomCoord() creation hors ile");
 		}
@@ -503,7 +537,7 @@ public class Ile extends Observable {
 		} else {
 			System.out.println("Ne fait pas partie des secteurs pris en charge");
 		}
-		return getCoord(c);
+		return c;
 	}
 	
 
@@ -554,7 +588,7 @@ public class Ile extends Observable {
 	}
 	
 	public boolean isSubmerged(Coord c1) {
-		Coord c = getCoord(c1);
+		Coord c = c1;
 		if(this.submerg.contains(c) || c==null) {
 			return true;
 		}
@@ -563,6 +597,7 @@ public class Ile extends Observable {
 	
 	/**
 	 * Verifie les relations et enregistrements des coord
+	 * </br> <b>Methode de test<b>
 	 */
 	public void checkZones() {
 		for(int i=0; i<territoire.length; i++) {
@@ -577,8 +612,8 @@ public class Ile extends Observable {
 			}
 		}
 		for(int i=0; i<this.shore.size(); i++) {
-			if(this.shore.get(i) != getCoord(this.shore.get(i))) {
-				System.out.println(getCoord(this.shore.get(i))+" n'est pas enregistree en tant que shore "+getCoord(this.shore.get(i))+" !");
+			if(this.shore.get(i) != this.shore.get(i)) {
+				System.out.println(this.shore.get(i)+" n'est pas enregistree en tant que shore "+this.shore.get(i)+" !");
 			}
 		}
 	}

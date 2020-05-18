@@ -20,6 +20,7 @@ public class VueCommandes extends JPanel {
 	public JButton addPlayer;
 	public JButton finTour;
 	public JButton move;
+	public JButton asseche;
 	
 	/**
 	 * Positionnement
@@ -92,6 +93,12 @@ public class VueCommandes extends JPanel {
 		c.gridy = debutAction;
 		this.add(move, c);
 		move.addActionListener(ctrl);
+		
+		asseche = new JButton("Assecher");
+		c.gridx = 2;
+		c.gridy = debutAction;
+		this.add(asseche, c);
+		asseche.addActionListener(ctrl);
 		
 		
 		//Positionnement  Ligne 5-7

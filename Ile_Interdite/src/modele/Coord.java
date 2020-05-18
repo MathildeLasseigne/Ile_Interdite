@@ -26,4 +26,13 @@ public class Coord {
 	public String toString() {
 		return "("+absc+", "+ord+")";
 	}
+	
+	public boolean equals(Object x) {
+		if(x instanceof Coord) {
+			Coord c = (Coord) x;
+			return (c.getAbsc() == this.absc) && (c.getOrd() == this.ord);
+		}
+		
+		return false;
+	}
 }

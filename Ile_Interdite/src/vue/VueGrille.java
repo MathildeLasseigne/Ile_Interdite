@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import modele.Artefact;
 import modele.Coord;
 import modele.Etat;
 import modele.Ile;
@@ -77,6 +78,7 @@ public class VueGrille extends JPanel implements Observer {
 			 * coordonnées du coin en haut à gauche.
 			 */
 			paint(g, ile.getZone(j, i), j*TAILLE, i*TAILLE);
+			paintZone(g, ile.getZone(j, i));
 		    }
 		}
     }
@@ -91,14 +93,34 @@ public class VueGrille extends JPanel implements Observer {
     private void paint(Graphics g, Zone z, int x, int y) {
         /** Sélection d'une couleur. */
 	if (z.getEtat() == Etat.submergee) {
-	    g.setColor(Color.BLACK);
+	    g.setColor(new Color(0, 47, 167));
 	} else if (z.getEtat() == Etat.inondee) {
-            g.setColor(Color.blue);
+            g.setColor(new Color(115, 194, 251));
     } else {
-    	g.setColor(Color.lightGray);
+    	g.setColor(new Color(224, 205, 169));
     }
         /** Coloration d'un rectangle. */
         g.fillRect(x, y, TAILLE, TAILLE);
+    }
+    
+    /**
+     * Si la zone est speciale, rajoute un element de dessin par dessus
+     * </br> Si la zone est un artefact, dessine une croix X de la couleur de l element correspondant
+     * @param g
+     * @param z
+     */
+    private void paintZone(Graphics g, Zone z) {
+    	if(z.getType().isSpecial()) {
+    		if(z.getType().hasArtefact() && z.estAccessible()) {
+    			if(z.getType() instanceof Artefact ) {
+    				Artefact art = (Artefact) z.getType();
+    				g.setColor(getColorArtefact(art.getElement()));
+    				//Dessine une croix
+    				g.drawLine(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE, ((z.getCoord().getAbsc()+1)*TAILLE)-1, ((z.getCoord().getOrd()+1)*TAILLE)-1);
+    				g.drawLine(z.getCoord().getAbsc()*TAILLE, ((z.getCoord().getOrd()+1)*TAILLE)-1, ((z.getCoord().getAbsc()+1)*TAILLE)-1, z.getCoord().getOrd()*TAILLE);
+    			}
+    		}
+    	}
     }
     
     /**
@@ -150,6 +172,25 @@ public class VueGrille extends JPanel implements Observer {
     			this.charaPlayers.get(i).setVisible(false);
     		}
     	}
+    }
+    
+    /**
+     * Recupere la couleur a associer a un artefact en fonction de son element
+     * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
+     * @param element
+     * @return
+     */
+    private Color getColorArtefact(int element) {
+    	if(element == 0) {
+    		return Color.BLUE;
+    	} else if(element == 1) {
+    		return Color.RED;
+    	} else if(element == 2) {
+    		return Color.WHITE;
+    	} else if(element == 3) {
+    		return new Color(34, 120, 15);
+    	}
+    	return Color.BLACK;
     }
     
 
