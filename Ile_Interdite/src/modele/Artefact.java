@@ -40,7 +40,7 @@ public class Artefact extends Type {
 	}
 	
 	/**
-	 * Prend l artefact de la zone, celle ci est similaire a une zone de type Ordinaire
+	 * Prend l artefact de la zone, celle ci deviens similaire a une zone de type Ordinaire
 	 * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
 	 * @return l element de l artefact
 	 */

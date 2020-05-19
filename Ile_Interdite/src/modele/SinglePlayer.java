@@ -52,6 +52,17 @@ public class SinglePlayer {
 	}
 	
 	/**
+	 * Recupere l ensemble de l inventaire du player
+	 * </br>Ligne 0 : Cles
+	 * </br>Ligne 1 : Artefacts
+	 * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
+	 * @return
+	 */
+	public int[][] getInventaire(){
+		return this.inventaire;
+	}
+	
+	/**
 	 * Ajoute une cle a l inventaire du player
 	 * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
 	 * @param cle element de la cle
@@ -78,7 +89,7 @@ public class SinglePlayer {
 			inventaire[1][art]++;
 			return true;
 		} else {
-			System.out.println("Artefact de trop !");
+			System.out.println("Artefact de type "+art+" de trop !");
 			return false;
 		}
 	}

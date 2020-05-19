@@ -210,8 +210,7 @@ public class Ile extends Observable {
 	 * @param c
 	 * @return
 	 */
-	private boolean estIlot(Coord c1) {
-		Coord c = c1;
+	private boolean estIlot(Coord c) {
 		if(submerg.contains(c)) {
 			return false;
 		}
@@ -234,8 +233,7 @@ public class Ile extends Observable {
 	 * @return null si sub == false et c est entouree de zones submergees 
 	 * ou si tous les voisins dispos sont dans la liste d exceptions
 	 */
-	public Coord getVoisin(Coord c1, boolean sub, ArrayList<Coord> except) {
-		Coord c = c1;
+	public Coord getVoisin(Coord c, boolean sub, ArrayList<Coord> except) {
 		
 		if(estIlot(c) && sub==false) {
 			return null;
@@ -246,9 +244,16 @@ public class Ile extends Observable {
 		if(except != null) {  //Verifie s il est possible d avoir un voisin en prenant en compte except
 			int voisinsDisp = 0;
 			for(Coord cVois : voisList) {
-				if(! except.contains(cVois)) {
-					voisinsDisp++;
+				if(sub == true) {  //Besoin car comme c est submerg (car sauve), c n est pas ilot !
+					if(! except.contains(cVois)) {
+						voisinsDisp++;
+					}
+				} else {
+					if((! except.contains(cVois)) && ! submerg.contains(cVois)) {
+						voisinsDisp++;
+					}
 				}
+				
 			}
 			if(voisinsDisp == 0) {
 				return null;

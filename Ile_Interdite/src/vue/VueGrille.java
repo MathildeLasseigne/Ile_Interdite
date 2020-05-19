@@ -184,7 +184,7 @@ public class VueGrille extends JPanel implements Observer {
     	if(element == 0) {
     		return Color.BLUE;
     	} else if(element == 1) {
-    		return Color.RED;
+    		return new Color(187, 11, 11);
     	} else if(element == 2) {
     		return Color.WHITE;
     	} else if(element == 3) {

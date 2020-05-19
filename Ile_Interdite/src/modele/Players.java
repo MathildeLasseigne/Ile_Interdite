@@ -154,6 +154,33 @@ public class Players {
 	}
 	
 	/**
+	 * Recupere l inventaire du joueur actif
+	 * @return
+	 */
+	public int[][] getInventaire(){
+		return this.playersList.get(activePlayer).getInventaire();
+	}
+	
+	/**
+	 * Ajoute a l inventaire du player l artefact d element correspondant
+	 * @param element
+	 * @return
+	 */
+	public boolean addArtefact(int element) {
+		return this.playersList.get(activePlayer).addArtefact(element);
+	}
+	
+	/**
+	 * Ajoute a l inventaire du player la cle d element correspondant
+	 * @param element
+	 * @return
+	 */
+	public boolean addCle(int element) {
+		return this.playersList.get(activePlayer).addCle(element);
+	}
+	
+	
+	/**
 	 * Renvoie le nb de players restants
 	 * @return
 	 */
@@ -198,6 +225,7 @@ public class Players {
 	public int getActionsRes() {
 		return this.actionsRestantes;
 	}
+	
 	
 	/**
 	 * Verifie les relations et enregistrements des coord

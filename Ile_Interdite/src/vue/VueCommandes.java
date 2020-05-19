@@ -1,18 +1,18 @@
 package vue;
 
-import java.util.*;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
 import controleur.Controleur;
-import modele.Ile;
 
 public class VueCommandes extends JPanel {
 
 	public JLabel idPlayer;
 	public JLabel actionsPlayer;
 	public JLabel nbPlayers;
+	public JLabel inventaire;
+	
+	private Color buttonBackground;
 	
 	/**
 	 * Actions
@@ -21,6 +21,7 @@ public class VueCommandes extends JPanel {
 	public JButton finTour;
 	public JButton move;
 	public JButton asseche;
+	public JButton artefact;
 	
 	/**
 	 * Positionnement
@@ -30,6 +31,31 @@ public class VueCommandes extends JPanel {
 	public JButton center;
 	public JButton right;
 	public JButton left;
+	
+	/**
+	 * Inventaire
+	 */
+	public JButton artEau;
+	public JButton artFeu;
+	public JButton artAir;
+	public JButton artTerre;
+	public JButton cleEau;
+	public JButton cleFeu;
+	public JButton cleAir;
+	public JButton cleTerre;
+	
+	
+	/**
+	 * Images
+	 */
+	private ImageIcon artEauImg;
+	private ImageIcon artFeuImg;
+	private ImageIcon artAirImg;
+	private ImageIcon artTerreImg;
+	private ImageIcon cleEauImg;
+	private ImageIcon cleFeuImg;
+	private ImageIcon cleAirImg;
+	private ImageIcon cleTerreImg;
 	
 	
 	/**
@@ -41,6 +67,7 @@ public class VueCommandes extends JPanel {
 	public VueCommandes(Controleur control) {
 		this.ctrl = control;
 		ctrl.setCommandes(this);
+		setImages();
 		
 		this.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -56,6 +83,8 @@ public class VueCommandes extends JPanel {
 		c.gridy = 0;
 		this.add(addPlayer, c);
 		addPlayer.addActionListener(ctrl);
+		
+		this.buttonBackground = addPlayer.getBackground();
 		
 		
 		//Passage de tour  Ligne 1-3
@@ -100,20 +129,29 @@ public class VueCommandes extends JPanel {
 		this.add(asseche, c);
 		asseche.addActionListener(ctrl);
 		
+		artefact = new JButton("Prend Artefact");
+		c.gridx = 3;
+		c.gridy = debutAction;
+		this.add(artefact, c);
+		artefact.addActionListener(ctrl);
+		
+		
+		
 		
 		//Positionnement  Ligne 5-7
 		int debutPos = 5;
+		int alignementPos = 2;
 		
 		
 		up = new JButton("^");
-		c.gridx = 1;
+		c.gridx = alignementPos;
 		c.gridy = debutPos;
 		c.anchor = GridBagConstraints.SOUTH;
 		this.add(up, c);
 		up.addActionListener(ctrl);
 		
 		down = new JButton("v");
-		c.gridx = 1;
+		c.gridx = alignementPos;
 		c.gridy = debutPos+2;
 		c.anchor = GridBagConstraints.NORTH;
 		this.add(down, c);
@@ -121,7 +159,7 @@ public class VueCommandes extends JPanel {
 		
 		
 		center = new JButton("O");
-		c.gridx = 1;
+		c.gridx = alignementPos;
 		c.gridy = debutPos+1;
 		c.fill = GridBagConstraints.BOTH;
 		c.anchor = GridBagConstraints.CENTER;
@@ -130,14 +168,14 @@ public class VueCommandes extends JPanel {
 		c.fill = GridBagConstraints.NONE;
 		
 		right = new JButton(">");
-		c.gridx = 2;
+		c.gridx = alignementPos+1;
 		c.gridy = debutPos+1;
 		c.anchor = GridBagConstraints.WEST;
 		this.add(right, c);
 		right.addActionListener(ctrl);
 		
 		left = new JButton("<");
-		c.gridx = 0;
+		c.gridx = alignementPos-1;
 		c.gridy = debutPos+1;
 		c.anchor = GridBagConstraints.EAST;
 		this.add(left, c);
@@ -146,6 +184,73 @@ public class VueCommandes extends JPanel {
 		//reset
 		c.fill = GridBagConstraints.NONE;
 		c.anchor = GridBagConstraints.CENTER;
+		
+		
+		//Inventaire Ligne 8 - 12
+		//https://stackoverflow.com/questions/4801386/how-do-i-add-an-image-to-a-jbutton
+		int debutInventaire = 8;
+		inventaire = new JLabel("Inventaire : ", JLabel.CENTER);
+		c.gridx = 0;
+		c.gridy = debutInventaire;
+		this.add(inventaire, c);
+		
+		JLabel artefact = new JLabel("Artefacts : ", JLabel.CENTER);
+		c.gridx = 0;
+		c.gridy = debutInventaire+1;
+		this.add(artefact, c);
+		
+		artEau = new JButton(artEauImg);
+		c.gridx = 0;
+		c.gridy = debutInventaire+2;
+		this.add(artEau, c);
+		artEau.addActionListener(ctrl);
+		
+		artFeu = new JButton(artFeuImg);
+		c.gridx = 1;
+		c.gridy = debutInventaire+2;
+		this.add(artFeu, c);
+		artFeu.addActionListener(ctrl);
+		
+		artAir = new JButton(artAirImg);
+		c.gridx = 2;
+		c.gridy = debutInventaire+2;
+		this.add(artAir, c);
+		artAir.addActionListener(ctrl);
+		
+		artTerre = new JButton(artTerreImg);
+		c.gridx = 3;
+		c.gridy = debutInventaire+2;
+		this.add(artTerre, c);
+		artTerre.addActionListener(ctrl);
+		
+		JLabel cle = new JLabel("Clés : ", JLabel.CENTER);
+		c.gridx = 0;
+		c.gridy = debutInventaire+3;
+		this.add(cle, c);
+		
+		cleEau = new JButton(cleEauImg);
+		c.gridx = 0;
+		c.gridy = debutInventaire+4;
+		this.add(cleEau, c);
+		cleEau.addActionListener(ctrl);
+		
+		cleFeu = new JButton(cleFeuImg);
+		c.gridx = 1;
+		c.gridy = debutInventaire+4;
+		this.add(cleFeu, c);
+		cleFeu.addActionListener(ctrl);
+		
+		cleAir = new JButton(cleAirImg);
+		c.gridx = 2;
+		c.gridy = debutInventaire+4;
+		this.add(cleAir, c);
+		cleAir.addActionListener(ctrl);
+		
+		cleTerre = new JButton(cleTerreImg);
+		c.gridx = 3;
+		c.gridy = debutInventaire+4;
+		this.add(cleTerre, c);
+		cleTerre.addActionListener(ctrl);
 		
 		
 		
@@ -171,6 +276,135 @@ public class VueCommandes extends JPanel {
 	
 	public void changeNbPlayer(int nb) {
 		nbPlayers.setText("Nb Joueurs : " + nb+" ");
+	}
+	
+	/**
+	 * Donne au JButton un apparence selectionnee/deselectionnee en fonction de estSelect
+	 * @param button
+	 * @param estSelect le bouton est il deja selectionne ?
+	 */
+	public void selectionne(JButton button, boolean estSelect) {
+		if(estSelect) {
+			button.setBackground(this.buttonBackground);
+		} else {
+			button.setBackground(Color.BLUE);
+		}
+	}
+	
+	/**
+	 * Met a jour la vue de l inventaire actif
+	 * @param inventaire
+	 */
+	public void setInventaire(int[][] inventaire) {
+		int[] artefacts = inventaire[0];
+		int[] cles = inventaire[1];
+		if(artefacts[0]==0) {
+			this.artEau.setVisible(false);
+		} else {
+			if(! this.artEau.isVisible()) {
+				this.artEau.setVisible(true);
+			}
+		}
+		if(artefacts[1]==0) {
+			this.artFeu.setVisible(false);
+		} else {
+			if(! this.artFeu.isVisible()) {
+				this.artFeu.setVisible(true);
+			}
+		}
+		if(artefacts[2]==0) {
+			this.artAir.setVisible(false);
+		} else {
+			if(! this.artAir.isVisible()) {
+				this.artAir.setVisible(true);
+			}
+		}
+		if(artefacts[3]==0) {
+			this.artTerre.setVisible(false);
+		} else {
+			if(! this.artTerre.isVisible()) {
+				this.artTerre.setVisible(true);
+			}
+		}
+		if(cles[0]==0) {
+			this.cleEau.setVisible(false);
+		} else {
+			if(! this.cleEau.isVisible()) {
+				this.cleEau.setVisible(true);
+			}
+			this.cleEau.setText("x"+cles[0]);
+		}
+		if(cles[1]==0) {
+			this.cleFeu.setVisible(false);
+		} else {
+			if(! this.cleFeu.isVisible()) {
+				this.cleFeu.setVisible(true);
+			}
+			this.cleFeu.setText("x"+cles[1]);
+		}
+		if(cles[2]==0) {
+			this.cleAir.setVisible(false);
+		} else {
+			if(! this.cleAir.isVisible()) {
+				this.cleAir.setVisible(true);
+			}
+			this.cleAir.setText("x"+cles[2]);
+		}
+		if(cles[3]==0) {
+			this.cleTerre.setVisible(false);
+		} else {
+			if(! this.cleTerre.isVisible()) {
+				this.cleTerre.setVisible(true);
+			}
+			this.cleTerre.setText("x"+cles[3]);
+		}
+	}
+	
+	private void setImages() {
+		int scale = 30;
+//		ImageIcon imgArtEauTemp = new ImageIcon("images/artefact_eau.png");
+//		Image img = imgArtEauTemp.getImage();
+//		Image newimg = img.getScaledInstance(30, 30,  java.awt.Image.SCALE_SMOOTH);
+//		artEauImg = new ImageIcon(newimg);
+		artEauImg = new ImageIcon(((new ImageIcon("images/artefact_eau.png")).getImage()).getScaledInstance(scale, scale, java.awt.Image.SCALE_SMOOTH));
+		artFeuImg = new ImageIcon(((new ImageIcon("images/artefact_feu.png")).getImage()).getScaledInstance(scale, scale, java.awt.Image.SCALE_SMOOTH));
+		artAirImg = new ImageIcon(((new ImageIcon("images/artefact_air.png")).getImage()).getScaledInstance(scale, scale, java.awt.Image.SCALE_SMOOTH));
+		artTerreImg = new ImageIcon(((new ImageIcon("images/artefact_terre.png")).getImage()).getScaledInstance(scale, scale, java.awt.Image.SCALE_SMOOTH));
+		cleEauImg = new ImageIcon(((new ImageIcon("images/cle_eau.png")).getImage()).getScaledInstance(scale, scale, java.awt.Image.SCALE_SMOOTH));
+		cleFeuImg = new ImageIcon(((new ImageIcon("images/cle_feu.png")).getImage()).getScaledInstance(scale, scale, java.awt.Image.SCALE_SMOOTH));
+		cleAirImg = new ImageIcon(((new ImageIcon("images/cle_air.png")).getImage()).getScaledInstance(scale, scale, java.awt.Image.SCALE_SMOOTH));
+		cleTerreImg = new ImageIcon(((new ImageIcon("images/cle_terre.png")).getImage()).getScaledInstance(scale, scale, java.awt.Image.SCALE_SMOOTH));
+	}
+	
+	/**
+	 * Recupere l'image taille 200 de l artefact ou la cle
+	 * @param artefact Est-ce un artefact ?
+	 * @param element
+	 * @return
+	 */
+	public ImageIcon getImageIcone(boolean artefact, int element) {
+		if(artefact) {
+			if(element == 0) {
+				return new ImageIcon("images/artefact_eau.png");
+			} else if (element == 1) {
+				return new ImageIcon("images/artefact_feu.png");
+			} else if(element == 2) {
+				return new ImageIcon("images/artefact_air.png");
+			} else {
+				return new ImageIcon("images/artefact_terre.png");
+			}
+		} else {
+			if(element == 0) {
+				return new ImageIcon("images/cle_eau.png");
+			} else if (element == 1) {
+				return new ImageIcon("images/cle_feu.png");
+			} else if(element == 2) {
+				return new ImageIcon("images/cle_air.png");
+			} else {
+				return new ImageIcon("images/cle_terre.png");
+			}
+		}
+		
 	}
 
 }

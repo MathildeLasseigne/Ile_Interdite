@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import modele.Artefact;
 import modele.Coord;
 import modele.Direction;
 import modele.Ile;
@@ -94,6 +95,7 @@ public class Controleur implements ActionListener {
 						this.grille.update();
 						this.cmds.finTour.setText("Tour suivant");
 						this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
+						this.cmds.setInventaire(this.players.getInventaire());
 						String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant \n puis sur la direction où vous voulez l'appliquer.\n";
 						String str2 = "Vous pouvez effectuer 3 actions en 1 tour.";
 						JOptionPane.showMessageDialog(null, str1+str2);
@@ -108,6 +110,7 @@ public class Controleur implements ActionListener {
 					}
 					this.ile.checkZones();
 					this.players.checkPlayers();
+					this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
 					 //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
 					changePlayer();
 					verifiePlayers();
@@ -121,9 +124,15 @@ public class Controleur implements ActionListener {
 				if (e.getSource() == this.cmds.move) {  //Actions
 					resetEtat();
 					this.move = true;
+					selectJButton(this.cmds.move, false);
 				} else if (e.getSource() == this.cmds.asseche) { //Actions de positionnement
 					resetEtat();
 					this.asseche = true;
+					selectJButton(this.cmds.asseche, false);
+				} else if (e.getSource() == this.cmds.artefact) { //Actions de positionnement
+					resetEtat();
+					this.searchArtefacts = true;
+					selectJButton(this.cmds.artefact, false);
 				} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
 					actionPos(Direction.up);
 				} else if (e.getSource() == this.cmds.down) {
@@ -171,15 +180,15 @@ public class Controleur implements ActionListener {
 	 */
 	private void resetEtat() {
 		if(move) {
-			selectJButton(this.cmds.move);
+			selectJButton(this.cmds.move, true);
 			move = false;
 		}
 		if(asseche) {
-			//selectJButton(this.cmds.move);
+			selectJButton(this.cmds.asseche, true);
 			asseche = false;
 		}
 		if(searchArtefacts) {
-			//selectJButton(this.cmds.move);
+			selectJButton(this.cmds.artefact, true);
 			searchArtefacts = false;
 		}
 	}
@@ -194,7 +203,12 @@ public class Controleur implements ActionListener {
 		for(Coord c : this.players.getCoordPlayersAlive()) {
 			if(! this.ile.isSafe(c)) {
 				Coord safeC = this.ile.getVoisin(c, false, this.players.getCoordPlayersAlive());
-				this.players.savePlayer(c, safeC);
+				if(this.ile.isSafe(safeC)) {
+					this.players.savePlayer(c, safeC);
+				} else {
+					this.players.savePlayer(c, null);
+				}
+				
 				this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
 				System.out.println("Old c :"+this.ile.isSubmerged(c));
 				System.out.println("New c :"+this.ile.isSubmerged(safeC));
@@ -268,7 +282,6 @@ public class Controleur implements ActionListener {
 					} else {
 						this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
 						//this.grille.update();
-						this.cmds.updateActionsPlayer(this.players.getActionsRes());
 					}
 				} else {
 					JOptionPane.showMessageDialog(null, "Cette zone n'est pas accessible !");
@@ -279,10 +292,26 @@ public class Controleur implements ActionListener {
 					JOptionPane.showMessageDialog(null, "Vous ne pouvez pas assécher cette zone !");
 				} else {
 					this.players.play();
-					this.cmds.updateActionsPlayer(this.players.getActionsRes());
 					this.grille.update();
 				}
+			} else if(this.searchArtefacts) {
+				if(this.ile.getZone(newC).getType().hasArtefact()) {
+					if(this.ile.getZone(newC).getType() instanceof Artefact) {
+						Artefact artefact = (Artefact) this.ile.getZone(newC).getType();
+						int element = artefact.takeArtefact();
+						this.players.addArtefact(element);
+						this.players.play();
+						this.grille.update();
+						this.cmds.updateActionsPlayer(this.players.getActionsRes());
+						 JOptionPane.showMessageDialog(
+			                        null,
+			                        new JLabel("Félicitation !\nVous avez trouvé un nouvel artefact !", this.cmds.getImageIcone(true, element), JLabel.LEFT),
+			                        "Nouvel Artefact !", JOptionPane.INFORMATION_MESSAGE);
+						 this.cmds.setInventaire(this.players.getInventaire());
+					}
+				}
 			}
+			this.cmds.updateActionsPlayer(this.players.getActionsRes());
 		}
 	}
 	
@@ -313,12 +342,14 @@ public class Controleur implements ActionListener {
 		this.partieFinie = true;
 	}
 	
+	
 	/**
 	 * Donne au bouton une apparence activee/desactivee
 	 * @param button
+	 * @param select
 	 */
-	private void selectJButton(JButton button) {
-		//https://openclassrooms.com/fr/courses/26832-apprenez-a-programmer-en-java/23727-interagissez-avec-des-boutons
+	private void selectJButton(JButton button, boolean select) {
+		this.cmds.selectionne(button, select);
 	}
 
 }
