@@ -61,10 +61,14 @@ public class Ile extends Observable {
 		initShore();
 		nbCoord = (HAUTEUR*LARGEUR)+getCadre().size();
 		
+		//Heliport
+		heliport = getRandCoord(6);
+		getZone(heliport).setType(new Heliport());
 		
+		//Artefacts
 		for(int element = 0; element<4; element++) {
 			Coord cArt = getRandCoord(5);
-			while(artefacts.contains(cArt)) {
+			while(artefacts.contains(cArt) || cArt == heliport) {
 				cArt = getRandCoord(5);
 			}
 			artefacts.add(cArt);
@@ -454,10 +458,12 @@ public class Ile extends Observable {
 	/**
 	 * Verifie si la zone de coord c est safe
 	 * @param c
-	 * @return
+	 * @return return false si c == null
 	 */
-	public boolean isSafe(Coord c1) {
-		Coord c = c1;
+	public boolean isSafe(Coord c) {
+		if(c == null) {
+			return false;
+		}
 		if(estSurIle(c)) {
 			if(getZone(c).estAccessible()) {
 				return true;

@@ -107,32 +107,49 @@ public class Players {
 	
 	
 	/**
-	 * Bouge forciblement un joueur de position cP sur une case cSafe si possible. Sinon le joueur meurs
+	 * 
+	 */
+	/**Bouge forciblement un joueur de position cP sur une case cSafe si possible. Sinon le joueur meurs
 	 * @param cP La coord du joueur devenue zone submergee
 	 * @param cSafe Une coord voisine safe du joueur prise au hasard. Si cSafe == null, le joueur meurs
+	 * @return l id du joueur s il est mort -1 sinon
 	 */
-	public void savePlayer(Coord cP, Coord cSafe) {
-		SinglePlayer p = getPlayer(cP);
+	public int savePlayer(Coord cP, Coord cSafe) {
+		SinglePlayer p = getPlayer(cP, false);
 		if (cSafe != null) {
 			p.move(cSafe);
 			playersCoord.set(p.getId(), cSafe);
+			return -1;
 			
 		} else {
 			diePlayer(p.getId());
+			return p.getId();
 		}
 	}
 	
+
 	/**
 	 * Recupere le premier SinglePlayer a la coordonnee c
 	 * @param c
+	 * @param dead Les joueurs morts compris ?
 	 * @return
 	 */
-	public SinglePlayer getPlayer(Coord c) {
-		for(SinglePlayer p : playersList) {
-			if(p.getCoord() == c) {
-				return p;
+	public SinglePlayer getPlayer(Coord c, boolean dead) {
+		if(dead) {
+			for(SinglePlayer p : playersList) {
+				if(p.getCoord() == c) {
+					return p;
+				}
+			}
+		} else {
+			for(Coord cP : getCoordPlayersAlive()) {
+				if(cP == c) {
+					int idx = getCoordPlayersAlive().indexOf(cP);
+					return getPlayer(getIdPlayersAlive().get(idx));
+				}
 			}
 		}
+		
 		return null;
 	}
 	
@@ -164,6 +181,10 @@ public class Players {
 	 */
 	public int getId() {
 		return activePlayer;
+	}
+	
+	public String getStringPlayer(int id) {
+		return this.playersList.get(id).toString();
 	}
 	
 	/**
@@ -230,6 +251,7 @@ public class Players {
 		}
 		return lc;
 	}
+	
 	
 	public ArrayList<Integer> getIdPlayersAlive(){
 		ArrayList<Integer> lId = new ArrayList<>();

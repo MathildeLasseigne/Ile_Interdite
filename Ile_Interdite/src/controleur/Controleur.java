@@ -42,6 +42,12 @@ public class Controleur implements ActionListener {
 	private boolean move;
 	private boolean asseche;
 	private boolean searchArtefacts;
+	private boolean echange;
+	
+	/**
+	 * Echange
+	 */
+	private int[][] plateformeEchange = new int[2][4]; //A la maniere d un inventaire
 	
 	/**
 	 * Cree un controleur gerant la partie
@@ -68,6 +74,14 @@ public class Controleur implements ActionListener {
 		move = false;
 		asseche = false;
 		searchArtefacts = false;
+		echange = false;
+		
+		//Echange
+		for(int i=0; i<this.plateformeEchange.length; i++) {
+			for(int j=0; j<this.plateformeEchange[0].length; j++) {
+				this.plateformeEchange[i][j] = 0;
+			}
+		}
 	}
 	
 	
@@ -120,6 +134,7 @@ public class Controleur implements ActionListener {
 					 //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
 					changePlayer();
 					verifiePlayers();
+					verifieZones();
 					this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
 				}
 			} else if (e.getSource() == this.cmds.addPlayer) {
@@ -153,7 +168,7 @@ public class Controleur implements ActionListener {
 				}
 				
 			} else {
-				if (e.getSource() != this.cmds.addPlayer) {
+				if (e.getSource() != this.cmds.addPlayer && e.getSource() != this.cmds.finTour) {
 					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
 				}				
 			}
@@ -185,6 +200,15 @@ public class Controleur implements ActionListener {
 			selectJButton(this.cmds.artefact, true);
 			searchArtefacts = false;
 		}
+		if(echange) {
+			//selectJButton(this.cmds.artefact, true);
+			echange = false;
+			for(int i=0; i<this.plateformeEchange.length; i++) {
+				for(int j=0; j<this.plateformeEchange[0].length; j++) {
+					this.plateformeEchange[i][j] = 0;
+				}
+			}
+		}
 	}
 	
 	
@@ -194,20 +218,51 @@ public class Controleur implements ActionListener {
 	 * </br> Peut aussi etre utilise pour la victoire
 	 */
 	private void verifiePlayers() {
+		int nbMort = 0;
+		String joueurs = "";
 		for(Coord c : this.players.getCoordPlayersAlive()) {
 			if(! this.ile.isSafe(c)) {
 				Coord safeC = this.ile.getVoisin(c, false, this.players.getCoordPlayersAlive());
-				if(this.ile.isSafe(safeC)) {
-					this.players.savePlayer(c, safeC);
+				boolean nulle = false;
+				if(safeC == null) {
+					nulle = true;
+				}
+				if(this.ile.isSafe(safeC) || nulle) {
+					int idMort = this.players.savePlayer(c, safeC);
+					if(idMort != -1) { //S'il y a eu un mort
+						if(nbMort == 0) {
+							joueurs += this.players.getPlayer(idMort);
+						} else {
+							joueurs += ", " + this.players.getPlayer(idMort);
+						}
+						nbMort ++;
+					}
 				} else {
 					this.players.savePlayer(c, null);
 				}
+				if(nbMort != 0) {
+					
+				}
 				
-				this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
 				System.out.println("Old c :"+this.ile.isSubmerged(c));
 				System.out.println("New c :"+this.ile.isSubmerged(safeC));
 			}
 		}
+		this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+		if(nbMort != 0) {
+			String str = "";
+			if(nbMort == 1) {
+				str += " s'est noyé !";
+			} else {
+				str += " se sont noyés !";
+			}
+			ImageIcon noyade = new ImageIcon("images/noyade.jpg");
+			JOptionPane.showMessageDialog(
+	                null,
+	                new JLabel("Malheur ! "+joueurs+str, noyade, JLabel.LEFT),
+	                "Nous nous souviendrons de votre sacrifice !", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
 		if(this.players.getNbPlayersAlive()==0) {
 			endGame(false);
 		}
@@ -221,13 +276,13 @@ public class Controleur implements ActionListener {
 			artefactPerdu = true;
 			endGame(false);
 		}
-		if(! this.ile.isSafe(this.ile.getHeliport())) {
-			heliportPerdu = true;
-			endGame(false);
-		}
-		if(this.ile.getZone(this.ile.getHeliport()).getType().isFull()) {
-			endGame(true);
-		}
+//		if(! this.ile.isSafe(this.ile.getHeliport())) {
+//			heliportPerdu = true;
+//			endGame(false);
+//		}
+//		if(this.ile.getZone(this.ile.getHeliport()).getType().isFull()) {
+//			endGame(true);
+//		}
 	}
 	
 	
@@ -283,9 +338,33 @@ public class Controleur implements ActionListener {
 	 * </br> A un certain pourcentage de change de trouver une cle, un de ne rien trouver et un de provoquer une montee des eaux
 	 */
 	private void chercheCle() {
-		
-		
-		this.cmds.setInventaire(this.players.getInventaire());
+		int probaCle = 30;
+		int probaInond = 20;
+		int randCle = this.ile.rangedRandomInt(0, 100);
+		int randInond = this.ile.rangedRandomInt(0, 100);
+		if(randCle <= probaCle) {
+			int element = this.ile.rangedRandomInt(0, 3);
+			this.players.addCle(element);
+			JOptionPane.showMessageDialog(
+                    null,
+                    new JLabel("Félicitation ! Vous avez trouvé une nouvelle clé !", this.cmds.getImageIcone(false, element), JLabel.LEFT),
+                    "Un pas de plus vers les artefacts !", JOptionPane.INFORMATION_MESSAGE);
+			this.cmds.setInventaire(this.players.getInventaire());
+			
+		} else {
+			if(randInond <= probaInond) {
+				if(! this.ile.updateIle()) {
+					endGame(false);
+				}
+				ImageIcon vague = new ImageIcon("images/vague.jpg");
+				JOptionPane.showMessageDialog(
+                        null,
+                        new JLabel("Oh non ! Vous avez déclanché une montée des eaux en cherchant trop profondément dans le sable !", vague, JLabel.LEFT),
+                        "Catastrophe !", JOptionPane.INFORMATION_MESSAGE);
+				//JOptionPane.showMessageDialog(null, "Oh non ! Vous avez déclanché une montée des eaux en cherchant trop profondément dans le sable !","Catastrophe !", JOptionPane.INFORMATION_MESSAGE);
+			}
+		}
+
 	}
 	
 	
@@ -309,7 +388,7 @@ public class Controleur implements ActionListener {
 								heliport.addArtefact(artefacts);
 							}
 						} else {
-							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","Vous n'êtes pas prêts pour l'heliport !", JOptionPane.WARNING_MESSAGE);
 						}
 					} else if(this.ile.getZone(this.players.getCoord()).getType().isExit()) {
 						boolean reussite = false;
@@ -365,6 +444,20 @@ public class Controleur implements ActionListener {
 						}
 						
 					}
+				}
+			} else if(echange) {
+				boolean aEchange = false;
+				for(int i=0; i<this.plateformeEchange.length; i++) {
+					for(int j=0; j<this.plateformeEchange[0].length; j++) {
+						if(this.plateformeEchange[i][j] != 0) {
+							aEchange = true;
+						}
+					}
+				}
+				if(! aEchange) {
+					//Message Vous n'avez selectionne aucun objet a echanger !
+				} else {
+					
 				}
 			}
 			this.cmds.updateActionsPlayer(this.players.getActionsRes());

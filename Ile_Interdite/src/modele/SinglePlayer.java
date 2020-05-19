@@ -76,6 +76,19 @@ public class SinglePlayer {
 	}
 	
 	/**
+	 * Enlève une cle a l inventaire du player
+	 * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
+	 * @param cle element de la cle
+	 */
+	public boolean removeCle(int cle) {
+		if((cle<0 || cle >=4) && inventaire[1][cle]<=0) {
+			return false;
+		}
+		inventaire[1][cle]--;
+		return true;
+	}
+	
+	/**
 	 * Ajoute un artefact a l inventaire du player
 	 * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
 	 * @param art element de l artefact
@@ -87,6 +100,25 @@ public class SinglePlayer {
 		}
 		if(inventaire[0][art]<1) {
 			inventaire[0][art]++;
+			return true;
+		} else {
+			System.out.println("Artefact de type "+art+" de trop !");
+			return false;
+		}
+	}
+	
+	/**
+	 * Enleve un artefact a l inventaire du player
+	 * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
+	 * @param art element de l artefact
+	 * @return
+	 */
+	public boolean removeArtefact(int art) {
+		if((art<0 || art >=4) && inventaire[0][art]<=0) {
+			return false;
+		}
+		if(inventaire[0][art]<2) {
+			inventaire[0][art]--;
 			return true;
 		} else {
 			System.out.println("Artefact de type "+art+" de trop !");
