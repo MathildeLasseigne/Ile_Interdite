@@ -8,6 +8,7 @@ import javax.swing.*;
 import modele.Artefact;
 import modele.Coord;
 import modele.Direction;
+import modele.Heliport;
 import modele.Ile;
 import modele.Players;
 import vue.VueCommandes;
@@ -25,14 +26,18 @@ public class Controleur implements ActionListener {
 	
 	/**Heliport**/
 	
-	private int[] artefactsOnHeli;
 	private ArrayList<Integer> playersOnHeli = new ArrayList<>();
 	private Coord heliport;
+	
+	private final int nbCleNecessaire = 1;
+	
 	
 	
 	/** Etats **/
 	private boolean debutPartie;
 	private boolean partieFinie;
+	private boolean artefactPerdu;
+	private boolean heliportPerdu;
 	
 	private boolean move;
 	private boolean asseche;
@@ -54,11 +59,8 @@ public class Controleur implements ActionListener {
 	 */
 	private void init() {
 		// Heliport
-		artefactsOnHeli = new int[4];
-		for(int i =0; i<4; i++) {
-			artefactsOnHeli[i] = 0;
-		}
 		heliport = ile.getHeliport();
+		artefactPerdu = false;
 		
 		//Etats
 		debutPartie = false;
@@ -96,11 +98,15 @@ public class Controleur implements ActionListener {
 						this.cmds.finTour.setText("Tour suivant");
 						this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
 						this.cmds.setInventaire(this.players.getInventaire());
-						String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant \n puis sur la direction où vous voulez l'appliquer.\n";
+						String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant <br> puis sur la direction où vous voulez l'appliquer.<br>";
 						String str2 = "Vous pouvez effectuer 3 actions en 1 tour.";
-						JOptionPane.showMessageDialog(null, str1+str2);
+						//JOptionPane.showMessageDialog(null, str1+str2);
+						JOptionPane.showMessageDialog(
+		                        null,
+		                        new JLabel("<html>"+str1+str2+"</html>", JLabel.CENTER),
+		                        "Instructions",  JOptionPane.INFORMATION_MESSAGE);
 					} else {
-						JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
+						JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
 					}
 					
 				} else { //Partie commencee
@@ -108,12 +114,13 @@ public class Controleur implements ActionListener {
 					if ( ! ile.updateIle()) { //Mise a jour de l ile
 						endGame(false);
 					}
+					chercheCle();
 					this.ile.checkZones();
 					this.players.checkPlayers();
-					this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
 					 //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
 					changePlayer();
 					verifiePlayers();
+					this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
 				}
 			} else if (e.getSource() == this.cmds.addPlayer) {
 				if(debutPartie == false) {
@@ -146,26 +153,13 @@ public class Controleur implements ActionListener {
 				}
 				
 			} else {
-				if (e.getSource() == this.cmds.move) {  //Actions
-					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
-				} else if (e.getSource() == this.cmds.asseche) { //Actions de positionnement
-					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
-				} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
-					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
-				} else if (e.getSource() == this.cmds.down) {
-					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
-				} else if (e.getSource() == this.cmds.center) {
-					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
-				} else if (e.getSource() == this.cmds.right) {
-					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
-				} else if (e.getSource() == this.cmds.left) {
-					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie");
-				}
-				
+				if (e.getSource() != this.cmds.addPlayer) {
+					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
+				}				
 			}
 			
 		} else {
-			JOptionPane.showMessageDialog(null, "La partie est déjà finie !"); //Pour ne pas pouvoir continuer apres la fin
+			JOptionPane.showMessageDialog(null, "La partie est déjà finie !","Où est passée l'île ?", JOptionPane.ERROR_MESSAGE); //Pour ne pas pouvoir continuer apres la fin
 		}
 		
 	}
@@ -220,6 +214,25 @@ public class Controleur implements ActionListener {
 	}
 	
 	/**
+	 * Verifie si les zones importantes ne sont pas submergées.
+	 */
+	private void verifieZones() {
+		if(! this.ile.accessibiliteArtefacts()) {
+			artefactPerdu = true;
+			endGame(false);
+		}
+		if(! this.ile.isSafe(this.ile.getHeliport())) {
+			heliportPerdu = true;
+			endGame(false);
+		}
+		if(this.ile.getZone(this.ile.getHeliport()).getType().isFull()) {
+			endGame(true);
+		}
+	}
+	
+	
+	
+	/**
 	 * Recupere la coordonnee dans la direction donnee par rapport a la coordonnee 
 	 * du player actif de players
 	 * </br> ! Verifier si est dans l ile !
@@ -265,6 +278,16 @@ public class Controleur implements ActionListener {
 		this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
 	}
 	
+	/**
+	 * Cherche une cle
+	 * </br> A un certain pourcentage de change de trouver une cle, un de ne rien trouver et un de provoquer une montee des eaux
+	 */
+	private void chercheCle() {
+		
+		
+		this.cmds.setInventaire(this.players.getInventaire());
+	}
+	
 	
 	/**
 	 * Effectue l action correspondante en fonction des etats
@@ -272,24 +295,48 @@ public class Controleur implements ActionListener {
 	 */
 	private void actionPos(Direction dir) {
 		if(this.players.getActionsRes()==0) {
-			JOptionPane.showMessageDialog(null, "Il ne vous reste plus d'action !");
+			JOptionPane.showMessageDialog(null, "Il ne vous reste plus d'action !","Il vous reste encore de l'énergie ?", JOptionPane.ERROR_MESSAGE);
 		} else {
 			Coord newC = getCoordDir(dir);
 			if(this.move) {
 				if(this.ile.isSafe(newC)) {
-					if(! this.players.move(newC)) {
-						JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !");
+					if(this.ile.getZone(newC).getType().isExit()) {
+						boolean reussite = false;
+						int[] artefacts = this.players.moveHelico(true, reussite, newC);
+						if(reussite == true) {
+							if(this.ile.getZone(newC).getType() instanceof Heliport) {
+								Heliport heliport = (Heliport) this.ile.getZone(newC).getType();
+								heliport.addArtefact(artefacts);
+							}
+						} else {
+							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+						}
+					} else if(this.ile.getZone(this.players.getCoord()).getType().isExit()) {
+						boolean reussite = false;
+						int[] artefacts = this.players.moveHelico(false, reussite, newC);
+						if(reussite == true) {
+							if(this.ile.getZone(newC).getType() instanceof Heliport) {
+								Heliport heliport = (Heliport) this.ile.getZone(newC).getType();
+								heliport.removeArtefact(artefacts);
+							}
+						} else {
+							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","L'héliport est confortable hein ?", JOptionPane.WARNING_MESSAGE);
+						}
 					} else {
-						this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
-						//this.grille.update();
+						if(! this.players.move(newC)) {
+							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+						} else {
+							this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+							//this.grille.update();
+						}
 					}
 				} else {
-					JOptionPane.showMessageDialog(null, "Cette zone n'est pas accessible !");
+					JOptionPane.showMessageDialog(null, "Cette zone n'est pas accessible !","Le vide vous attire ?", JOptionPane.ERROR_MESSAGE);
 				}
 				
 			} else if (this.asseche) {
 				if(! this.ile.asseche(newC)) {
-					JOptionPane.showMessageDialog(null, "Vous ne pouvez pas assécher cette zone !");
+					JOptionPane.showMessageDialog(null, "Vous ne pouvez pas assécher cette zone !","Plus sec que sec", JOptionPane.WARNING_MESSAGE);
 				} else {
 					this.players.play();
 					this.grille.update();
@@ -298,16 +345,25 @@ public class Controleur implements ActionListener {
 				if(this.ile.getZone(newC).getType().hasArtefact()) {
 					if(this.ile.getZone(newC).getType() instanceof Artefact) {
 						Artefact artefact = (Artefact) this.ile.getZone(newC).getType();
-						int element = artefact.takeArtefact();
-						this.players.addArtefact(element);
-						this.players.play();
-						this.grille.update();
-						this.cmds.updateActionsPlayer(this.players.getActionsRes());
-						 JOptionPane.showMessageDialog(
-			                        null,
-			                        new JLabel("Félicitation !\nVous avez trouvé un nouvel artefact !", this.cmds.getImageIcone(true, element), JLabel.LEFT),
-			                        "Nouvel Artefact !", JOptionPane.INFORMATION_MESSAGE);
-						 this.cmds.setInventaire(this.players.getInventaire());
+						//int element = artefact.takeArtefact();
+						int element = artefact.getElement();
+						if(this.players.getNbCle(element) >= this.nbCleNecessaire) {
+							if(this.players.addArtefact(element)) {
+								this.players.play();
+								this.grille.update();
+								artefact.takeArtefact();
+								this.cmds.updateActionsPlayer(this.players.getActionsRes());
+								 JOptionPane.showMessageDialog(
+					                        null,
+					                        new JLabel("Félicitation ! Vous avez trouvé un nouvel artefact !", this.cmds.getImageIcone(true, element), JLabel.LEFT),
+					                        "Nouveau trésor !", JOptionPane.INFORMATION_MESSAGE);
+								 this.cmds.setInventaire(this.players.getInventaire());
+							}
+						} else {
+							ImageIcon tresorVerrouille = new ImageIcon(((new ImageIcon("images/coffre_verrouille.jpg")).getImage()).getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH));
+							JOptionPane.showMessageDialog(null, "Vous ne possèdez pas assez de clés ! Cherchez encore !","J'ouvre le coffre avec quoi ?", JOptionPane.WARNING_MESSAGE, tresorVerrouille);
+						}
+						
 					}
 				}
 			}
@@ -326,17 +382,45 @@ public class Controleur implements ActionListener {
 			
 			if(this.players.getNbPlayersAlive() != this.players.getNbPlayers()) {
 				int dead = this.players.getNbPlayers()-this.players.getNbPlayersAlive();
-				JOptionPane.showMessageDialog(null, "Vous avez gagné !\n Mais vous avez laissé "+dead+" joueurs derrière vous ! \n Monstres ! Q_Q");
+				JOptionPane.showMessageDialog(null, "<html>Vous avez gagné !<br> Mais vous avez laissé "+dead+" joueurs derrière vous ! <br> Monstres ! Q_Q</html>",
+                        "Aventurier sans pitié",  JOptionPane.PLAIN_MESSAGE);
 			} else {
-				JOptionPane.showMessageDialog(null, "Félicitation ! Vous avez gagné !");
+				ImageIcon tresor = new ImageIcon(((new ImageIcon("images/coffre_au_tresor.jpg")).getImage()).getScaledInstance(200, 165, java.awt.Image.SCALE_SMOOTH));
+				JOptionPane.showMessageDialog(
+                        null,
+                        new JLabel("Félicitation ! Vous avez gagné ! Vous pouvez maintenant vivre une vie de luxure !", tresor, JLabel.LEFT),
+                        "Aventurier à succès", JOptionPane.PLAIN_MESSAGE);
 			}
 		} else {
-			if(this.players.getNbPlayersAlive() != this.players.getNbPlayers()) {
-				int dead = this.players.getNbPlayers()-this.players.getNbPlayersAlive();
-				JOptionPane.showMessageDialog(null, "Vous avez perdu ! "+dead+" joueurs sont morts !");
+			if(artefactPerdu) {
+				if(this.players.getNbPlayersAlive() != this.players.getNbPlayers()) {
+					int dead = this.players.getNbPlayers()-this.players.getNbPlayersAlive();
+					JOptionPane.showMessageDialog(null, "Vous avez laissé un artefact être submergé ! Votre expedition tombe à l'eau. "+dead+" joueurs sont morts !",
+	                        "Aventuriers malchanceux",  JOptionPane.PLAIN_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(null, "Vous avez laissé un artefact être submergé ! Votre expedition tombe à l'eau. ",
+	                        "Faites plus attention à vos trésors !",  JOptionPane.PLAIN_MESSAGE);
+				}
+			} else if(heliportPerdu) {
+				if(this.players.getNbPlayersAlive() != this.players.getNbPlayers()) {
+					int dead = this.players.getNbPlayers()-this.players.getNbPlayersAlive();
+					JOptionPane.showMessageDialog(null, "Vous avez laissé l heliport être submergé ! Vous êtes dorénavant bloqué sur l'ile jusqu'à ce que vous vous noyez. "+dead+" joueurs sont morts avant vous. Les chanceux !",
+	                        "Un cimetière d'eau",  JOptionPane.PLAIN_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(null, "Vous avez laissé l heliport être submergé ! Vous êtes dorénavant bloqué sur l'ile jusqu'à ce que vous vous noyez. ",
+							"Un cimetière d'eau",  JOptionPane.PLAIN_MESSAGE);
+				}
 			} else {
-				JOptionPane.showMessageDialog(null, "Vous avez perdu !");
+				if(this.players.getNbPlayersAlive() != this.players.getNbPlayers()) {
+					int dead = this.players.getNbPlayers()-this.players.getNbPlayersAlive();
+					JOptionPane.showMessageDialog(null, "Vous avez perdu ! "+dead+" joueurs sont morts !",
+	                        "Aventuriers malchanceux",  JOptionPane.PLAIN_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(null, "Vous avez perdu !",
+	                        "Trop tard",  JOptionPane.PLAIN_MESSAGE);
+				}
 			}
+			
 			
 		}
 		this.partieFinie = true;

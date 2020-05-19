@@ -21,5 +21,7 @@ public abstract class Type {
 	 * Verifie si la zone influence la fin du jeu
 	 * @return
 	 */
-	public abstract boolean isFinal();
+	public abstract boolean isExit();
+	
+	public abstract boolean isFull();
 }

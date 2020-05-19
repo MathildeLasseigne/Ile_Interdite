@@ -25,7 +25,7 @@ public class Ile extends Observable {
 	private ArrayList<Coord> shore = new ArrayList<>();
 	
 	private Coord heliport;
-	ArrayList<Coord> artefacts = new ArrayList<>();
+	private ArrayList<Coord> artefacts = new ArrayList<>();
 	
 	public static final int HAUTEUR=20, LARGEUR=20;
 	/**
@@ -598,6 +598,16 @@ public class Ile extends Observable {
 			return true;
 		}
 		return false;
+	}
+	
+	
+	public boolean accessibiliteArtefacts() {
+		for(Coord c : this.artefacts) {
+			if( ! getZone(c).estAccessible()) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**

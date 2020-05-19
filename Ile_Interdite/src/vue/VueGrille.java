@@ -110,14 +110,16 @@ public class VueGrille extends JPanel implements Observer {
      * @param z
      */
     private void paintZone(Graphics g, Zone z) {
+    	Graphics2D g2d = (Graphics2D) g;
+    	g2d.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
     	if(z.getType().isSpecial()) {
     		if(z.getType().hasArtefact() && z.estAccessible()) {
     			if(z.getType() instanceof Artefact ) {
     				Artefact art = (Artefact) z.getType();
-    				g.setColor(getColorArtefact(art.getElement()));
+    				g2d.setColor(getColorArtefact(art.getElement()));
     				//Dessine une croix
-    				g.drawLine(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE, ((z.getCoord().getAbsc()+1)*TAILLE)-1, ((z.getCoord().getOrd()+1)*TAILLE)-1);
-    				g.drawLine(z.getCoord().getAbsc()*TAILLE, ((z.getCoord().getOrd()+1)*TAILLE)-1, ((z.getCoord().getAbsc()+1)*TAILLE)-1, z.getCoord().getOrd()*TAILLE);
+    				g2d.drawLine(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE, ((z.getCoord().getAbsc()+1)*TAILLE)-1, ((z.getCoord().getOrd()+1)*TAILLE)-1);
+    				g2d.drawLine(z.getCoord().getAbsc()*TAILLE, ((z.getCoord().getOrd()+1)*TAILLE)-1, ((z.getCoord().getAbsc()+1)*TAILLE)-1, z.getCoord().getOrd()*TAILLE);
     			}
     		}
     	}

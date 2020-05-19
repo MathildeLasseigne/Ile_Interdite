@@ -7,7 +7,7 @@ public class Ordinaire extends Type{
 	}
 
 	@Override
-	public boolean isFinal() {
+	public boolean isExit() {
 		return false;
 	}
 
@@ -18,6 +18,11 @@ public class Ordinaire extends Type{
 
 	@Override
 	public boolean isSpecial() {
+		return false;
+	}
+
+	@Override
+	public boolean isFull() {
 		return false;
 	}
 }

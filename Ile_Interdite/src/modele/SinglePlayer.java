@@ -7,8 +7,8 @@ public class SinglePlayer {
 	
 	/**
 	 * Inventaire :
-	 * </br>Ligne 0 : Cles
-	 * </br>Ligne 1 : Artefacts
+	 * </br>Ligne 0 : Artefacts
+	 * </br>Ligne 1 : Cles
 	 * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
 	 */
 	private int[][] inventaire = new int[2][4];
@@ -39,7 +39,7 @@ public class SinglePlayer {
 	 * @return
 	 */
 	public int[] getCles() {
-		return inventaire[0];
+		return inventaire[1];
 	}
 	
 	/**
@@ -48,7 +48,7 @@ public class SinglePlayer {
 	 * @return
 	 */
 	public int[] getArtefacts() {
-		return inventaire[1];
+		return inventaire[0];
 	}
 	
 	/**
@@ -71,7 +71,7 @@ public class SinglePlayer {
 		if(cle<0 || cle >=4) {
 			return false;
 		}
-		inventaire[0][cle]++;
+		inventaire[1][cle]++;
 		return true;
 	}
 	
@@ -85,8 +85,8 @@ public class SinglePlayer {
 		if(art<0 || art >=4) {
 			return false;
 		}
-		if(inventaire[1][art]<1) {
-			inventaire[1][art]++;
+		if(inventaire[0][art]<1) {
+			inventaire[0][art]++;
 			return true;
 		} else {
 			System.out.println("Artefact de type "+art+" de trop !");

@@ -26,8 +26,13 @@ public class Artefact extends Type {
 	}
 
 	@Override
-	public boolean isFinal() {
+	public boolean isExit() {
 		return false;
+	}
+	
+	@Override
+	public boolean isFull() {
+		return this.rempli;
 	}
 	
 	/**
@@ -51,6 +56,8 @@ public class Artefact extends Type {
 		this.rempli = false;
 		return this.element;
 	}
+
+
 	
 
 }

@@ -57,16 +57,29 @@ public class Players {
 	}
 	
 
-
 	/**
-	 * Deplace le player sur la coord c, position superposable avec autres players
+	 * Deplace le player sur la coord c, position superposable avec autres players ou de la coord c
+	 * @param to le player vas-il vers la position superposable (heliport)
+	 * @param reussite le mouvement as-t-il reussi ? A recuperer plus tard (pointeur)
 	 * @param c la coordonnee de l heliport
 	 * @return la liste des artefacts du player
 	 */
-	public int[] moveToHelico(Coord c) {
-		return null;
-		
+	public int[] moveHelico(boolean to, boolean reussite, Coord c) {
+		if(to) {
+			if(actionsRestantes > 0) {
+				playersList.get(activePlayer).move(c);
+				playersCoord.set(activePlayer, c);
+				actionsRestantes--;
+				reussite = true;
+			} else {
+				reussite = false;
+			}
+		} else {
+			reussite = move(c);
+		}
+		return getInventaire()[0];
 	}
+	
 	
 	public boolean move(Coord c) {
 		if(! playersCoord.contains(c)) {
@@ -155,6 +168,9 @@ public class Players {
 	
 	/**
 	 * Recupere l inventaire du joueur actif
+	 * </br>Ligne 0 : Artefacts
+	 * </br>Ligne 1 : Cles
+	 * </br>Ordre : 0: Eau, 1: Feu, 2: Air, 3: Terre
 	 * @return
 	 */
 	public int[][] getInventaire(){
@@ -162,7 +178,7 @@ public class Players {
 	}
 	
 	/**
-	 * Ajoute a l inventaire du player l artefact d element correspondant
+	 * Ajoute a l inventaire du player actif l artefact d element correspondant
 	 * @param element
 	 * @return
 	 */
@@ -171,12 +187,21 @@ public class Players {
 	}
 	
 	/**
-	 * Ajoute a l inventaire du player la cle d element correspondant
+	 * Ajoute a l inventaire du player actif la cle d element correspondant
 	 * @param element
 	 * @return
 	 */
 	public boolean addCle(int element) {
 		return this.playersList.get(activePlayer).addCle(element);
+	}
+	
+	/**
+	 * Recupere le nb de cles d un certain element que le joueur actif possede
+	 * @param element
+	 * @return
+	 */
+	public int getNbCle(int element) {
+		return this.playersList.get(activePlayer).getCles()[element];
 	}
 	
 	
