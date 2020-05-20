@@ -36,6 +36,11 @@ public class VueCommandes extends JPanel {
 	/**
 	 * Inventaire
 	 */
+	
+	private ImageIcon caseInventaire;
+	
+	private JLabel[][] backgroundInventaire = new JLabel[2][4];
+	
 	public JButton artEau;
 	public JButton artFeu;
 	public JButton artAir;
@@ -118,7 +123,7 @@ public class VueCommandes extends JPanel {
 		
 		//Actions  Ligne 4
 		int debutAction = 4;
-		actionsPlayer = new JLabel("Actions restantes: 3 ", JLabel.CENTER);
+		actionsPlayer = new JLabel("Actions restantes: _ ", JLabel.CENTER);
 		c.gridx = 0;
 		c.gridy = debutAction;
 		this.add(actionsPlayer, c);
@@ -216,24 +221,28 @@ public class VueCommandes extends JPanel {
 		c.gridy = debutInventaire+2;
 		this.add(artEau, c);
 		artEau.addActionListener(ctrl);
+		artEau.setVisible(false);
 		
 		artFeu = new JButton(artFeuImg);
 		c.gridx = 1;
 		c.gridy = debutInventaire+2;
 		this.add(artFeu, c);
 		artFeu.addActionListener(ctrl);
+		artFeu.setVisible(false);
 		
 		artAir = new JButton(artAirImg);
 		c.gridx = 2;
 		c.gridy = debutInventaire+2;
 		this.add(artAir, c);
 		artAir.addActionListener(ctrl);
+		artAir.setVisible(false);
 		
 		artTerre = new JButton(artTerreImg);
 		c.gridx = 3;
 		c.gridy = debutInventaire+2;
 		this.add(artTerre, c);
 		artTerre.addActionListener(ctrl);
+		artTerre.setVisible(false);
 		
 		JLabel cle = new JLabel("Clés : ", JLabel.CENTER);
 		c.gridx = 0;
@@ -245,27 +254,46 @@ public class VueCommandes extends JPanel {
 		c.gridy = debutInventaire+4;
 		this.add(cleEau, c);
 		cleEau.addActionListener(ctrl);
+		cleEau.setVisible(false);
 		
 		cleFeu = new JButton(cleFeuImg);
 		c.gridx = 1;
 		c.gridy = debutInventaire+4;
 		this.add(cleFeu, c);
 		cleFeu.addActionListener(ctrl);
+		cleFeu.setVisible(false);
 		
 		cleAir = new JButton(cleAirImg);
 		c.gridx = 2;
 		c.gridy = debutInventaire+4;
 		this.add(cleAir, c);
 		cleAir.addActionListener(ctrl);
+		cleAir.setVisible(false);
 		
 		cleTerre = new JButton(cleTerreImg);
 		c.gridx = 3;
 		c.gridy = debutInventaire+4;
 		this.add(cleTerre, c);
 		cleTerre.addActionListener(ctrl);
+		cleTerre.setVisible(false);
+		
+		this.caseInventaire =  new ImageIcon(((new ImageIcon("images/caseInventaire.jpg")).getImage()).getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH));
+		for(int i = 0; i<this.backgroundInventaire.length; i++) {
+			for(int j=0; j<this.backgroundInventaire[0].length; j++) {
+				this.backgroundInventaire[i][j] = new JLabel(this.caseInventaire);
+				c.gridx = j;
+				if(i==0) {
+					c.gridy = debutInventaire+2+i;
+				} else {
+					c.gridy = debutInventaire+3+i;
+				}
+				this.add(this.backgroundInventaire[i][j], c);
+			}
+		}
+		
 		
 		//Echange
-		int debutEtalageY = 13;
+		int debutEtalageY = 14;
 		JLabel echangeLab = new JLabel("Etalage :", JLabel.CENTER);
 		c.gridx = 0;
 		c.gridy = debutEtalageY;
@@ -335,61 +363,77 @@ public class VueCommandes extends JPanel {
 		int[] cles = inventaire[1];
 		if(artefacts[0]==0) {
 			this.artEau.setVisible(false);
+			this.backgroundInventaire[0][0].setVisible(true);
 		} else {
 			if(! this.artEau.isVisible()) {
 				this.artEau.setVisible(true);
+				this.backgroundInventaire[0][0].setVisible(false);
 			}
 		}
 		if(artefacts[1]==0) {
 			this.artFeu.setVisible(false);
+			this.backgroundInventaire[0][1].setVisible(true);
 		} else {
 			if(! this.artFeu.isVisible()) {
 				this.artFeu.setVisible(true);
+				this.backgroundInventaire[0][1].setVisible(false);
 			}
 		}
 		if(artefacts[2]==0) {
 			this.artAir.setVisible(false);
+			this.backgroundInventaire[0][2].setVisible(true);
 		} else {
 			if(! this.artAir.isVisible()) {
 				this.artAir.setVisible(true);
+				this.backgroundInventaire[0][2].setVisible(false);
 			}
 		}
 		if(artefacts[3]==0) {
 			this.artTerre.setVisible(false);
+			this.backgroundInventaire[0][3].setVisible(true);
 		} else {
 			if(! this.artTerre.isVisible()) {
 				this.artTerre.setVisible(true);
+				this.backgroundInventaire[0][3].setVisible(false);
 			}
 		}
 		if(cles[0]==0) {
 			this.cleEau.setVisible(false);
+			this.backgroundInventaire[1][0].setVisible(true);
 		} else {
 			if(! this.cleEau.isVisible()) {
 				this.cleEau.setVisible(true);
+				this.backgroundInventaire[1][1].setVisible(false);
 			}
 			this.cleEau.setText("x"+cles[0]);
 		}
 		if(cles[1]==0) {
 			this.cleFeu.setVisible(false);
+			this.backgroundInventaire[1][1].setVisible(true);
 		} else {
 			if(! this.cleFeu.isVisible()) {
 				this.cleFeu.setVisible(true);
+				this.backgroundInventaire[1][1].setVisible(false);
 			}
 			this.cleFeu.setText("x"+cles[1]);
 		}
 		if(cles[2]==0) {
 			this.cleAir.setVisible(false);
+			this.backgroundInventaire[1][2].setVisible(true);
 		} else {
 			if(! this.cleAir.isVisible()) {
 				this.cleAir.setVisible(true);
+				this.backgroundInventaire[1][2].setVisible(false);
 			}
 			this.cleAir.setText("x"+cles[2]);
 		}
 		if(cles[3]==0) {
 			this.cleTerre.setVisible(false);
+			this.backgroundInventaire[1][3].setVisible(true);
 		} else {
 			if(! this.cleTerre.isVisible()) {
 				this.cleTerre.setVisible(true);
+				this.backgroundInventaire[1][3].setVisible(false);
 			}
 			this.cleTerre.setText("x"+cles[3]);
 		}

@@ -5,6 +5,8 @@ public class SinglePlayer {
 	private int id;
 	private Coord coord;
 	
+	private int totalAction;
+	
 	/**
 	 * Inventaire :
 	 * </br>Ligne 0 : Artefacts
@@ -16,6 +18,7 @@ public class SinglePlayer {
 	public SinglePlayer(int id, Coord c) {
 		this.id = id;
 		this.coord = c;
+		this.totalAction = 3;
 		
 		for(int i=0; i<inventaire.length; i++) {
 			for(int j=0; j<inventaire[0].length; j++) {
@@ -31,6 +34,10 @@ public class SinglePlayer {
 	
 	public int getId() {
 		return this.id;
+	}
+	
+	public int getTotalAction() {
+		return this.totalAction;
 	}
 	
 	/**

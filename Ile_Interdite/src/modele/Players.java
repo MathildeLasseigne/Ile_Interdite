@@ -12,10 +12,10 @@ public class Players {
 	
 	
 	public int actionsRestantes;
-	public final int totalActions = 3;
+	//public final int totalActions = 3;
 	
 	public Players() {
-		actionsRestantes = 3;
+		actionsRestantes = 0;
 		nbPlayers = 0;
 		activePlayer = 0;
 	}
@@ -32,7 +32,7 @@ public class Players {
 		while(deadPlayersList.contains(activePlayer)) {
 			changePlayer();
 		}
-		actionsRestantes = totalActions;
+		actionsRestantes = playersList.get(activePlayer).getTotalAction();
 	}
 	
 	public boolean play() {
@@ -53,6 +53,7 @@ public class Players {
 		playersList.add(new SinglePlayer(nbPlayers, c));
 		playersCoord.add(c);
 		nbPlayers++;
+		actionsRestantes = playersList.get(activePlayer).getTotalAction();
 		return true;
 	}
 	
@@ -204,7 +205,6 @@ public class Players {
 		for(Coord cP : getCoordPlayersAlive()) {
 		if(cP.getAbsc() == c.getAbsc() && cP.getOrd() == c.getOrd()) {
 			int idx = getCoordPlayersAlive().indexOf(cP);
-			System.out.println("Id trouvee = " +getIdPlayersAlive().get(idx));
 			return getIdPlayersAlive().get(idx);
 		}
 	}

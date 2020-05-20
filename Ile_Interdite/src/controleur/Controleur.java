@@ -116,7 +116,7 @@ public class Controleur implements ActionListener {
 							this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
 							this.cmds.setInventaire(this.players.getInventaire());
 							String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant <br> puis sur la direction où vous voulez l'appliquer.<br>";
-							String str2 = "Vous pouvez effectuer 3 actions en 1 tour.";
+							String str2 = "Vous pouvez effectuer plusieurs actions en 1 tour.";
 							//JOptionPane.showMessageDialog(null, str1+str2);
 							JOptionPane.showMessageDialog(
 			                        null,
@@ -508,7 +508,9 @@ public class Controleur implements ActionListener {
 				}
 			} else if(echange) {
 				
-				doExchange(newC);
+				if(doExchange(newC)) {
+					resetEtat();
+				}
 			}
 			this.cmds.updateActionsPlayer(this.players.getActionsRes());
 		}
@@ -520,13 +522,11 @@ public class Controleur implements ActionListener {
 	 * @return
 	 */
 	private boolean doExchange(Coord c) {
-		System.out.println("Echange sur Coord"+c);
 		if(getSommeTab(plateformeEchange) == 0) {
 			JOptionPane.showMessageDialog(null, "Vous n'avez selectionné aucun objet à échanger !","Etalage vide", JOptionPane.WARNING_MESSAGE);
 			return false;
 		} else {
 			int id = this.players.getId(c);
-			System.out.println("Id joueur echange = "+id);
 			if(id != -1) {
 				if(! this.players.modInventaire(id, true, plateformeEchange)) {
 					System.out.println("Problem echange !");
@@ -600,29 +600,31 @@ public class Controleur implements ActionListener {
 					if(count != 0) {
 						list += ", ";
 					}
-					list += "x"+inventaire[i][el]+" Artefact";
+					count++;
+					list += "x"+inventaire[i][el]+" [Artefact";
 					if(el == 0) {
-						list += " de l'eau";
+						list += " de l'eau]";
 					} else if(el == 1) {
-						list += " du feu";
+						list += " du feu]";
 					} else if(el == 2) {
-						list += " de l'air";
+						list += " de l'air]";
 					} else if(el == 3) {
-						list += " de la terre";
+						list += " de la terre]";
 					}
 				} else if(inventaire[i][el] != 0) {
 					if(count != 0) {
 						list += ", ";
 					}
-					list += "x"+inventaire[i][el]+" Clé";
+					count++;
+					list += "x"+inventaire[i][el]+" [Clé";
 					if(el == 0) {
-						list += " de l'eau";
+						list += " de l'eau]";
 					} else if(el == 1) {
-						list += " du feu";
+						list += " du feu]";
 					} else if(el == 2) {
-						list += " de l'air";
+						list += " de l'air]";
 					} else if(el == 3) {
-						list += " de la terre";
+						list += " de la terre]";
 					}
 				}
 			}
