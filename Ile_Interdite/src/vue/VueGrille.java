@@ -121,6 +121,13 @@ public class VueGrille extends JPanel implements Observer {
     				g2d.drawLine(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE, ((z.getCoord().getAbsc()+1)*TAILLE)-1, ((z.getCoord().getOrd()+1)*TAILLE)-1);
     				g2d.drawLine(z.getCoord().getAbsc()*TAILLE, ((z.getCoord().getOrd()+1)*TAILLE)-1, ((z.getCoord().getAbsc()+1)*TAILLE)-1, z.getCoord().getOrd()*TAILLE);
     			}
+    		} else if(z.getType().isExit() && z.estAccessible()) {
+    			g.setColor(Color.black);
+    			g.drawOval(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE, TAILLE-1, TAILLE-1);
+    			ImageIcon heliportImg = new ImageIcon(((new ImageIcon("images/heliport.png")).getImage()).getScaledInstance(TAILLE, TAILLE, java.awt.Image.SCALE_SMOOTH));
+    			JLabel heliport = new JLabel(heliportImg, JLabel.CENTER);
+    			this.add(heliport);
+    			heliport.setLocation(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE);
     		}
     	}
     }

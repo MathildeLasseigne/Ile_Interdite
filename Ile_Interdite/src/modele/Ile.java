@@ -62,7 +62,8 @@ public class Ile extends Observable {
 		nbCoord = (HAUTEUR*LARGEUR)+getCadre().size();
 		
 		//Heliport
-		heliport = getRandCoord(6);
+		//heliport = getRandCoord(6);
+		heliport = new Coord(10,10);
 		getZone(heliport).setType(new Heliport());
 		
 		//Artefacts
@@ -606,10 +607,13 @@ public class Ile extends Observable {
 		return false;
 	}
 	
-	
+	/**
+	 * Verifie si les artefacts ne sont pas submerges
+	 * @return
+	 */
 	public boolean accessibiliteArtefacts() {
 		for(Coord c : this.artefacts) {
-			if( ! getZone(c).estAccessible()) {
+			if( ! getZone(c).estAccessible() && getZone(c).getType().hasArtefact()) {
 				return false;
 			}
 		}

@@ -82,7 +82,8 @@ public class Players {
 	
 	
 	public boolean move(Coord c) {
-		if(! playersCoord.contains(c)) {
+		//if(! playersCoord.contains(c)) {
+		if(! getCoordPlayersAlive().contains(c)) {
 			if(actionsRestantes > 0) {
 				playersList.get(activePlayer).move(c);
 				playersCoord.set(activePlayer, c);
@@ -183,6 +184,33 @@ public class Players {
 		return activePlayer;
 	}
 	
+	/**
+	 * Return l id du joueur sur la coord c
+	 * @param c
+	 * @return -1 si il n y a pas de joueur sur la coord c
+	 */
+	public int getId(Coord c) {
+//		System.out.println("Coord test = Coord"+c);
+//
+//		for(Coord cP : this.playersCoord) {
+//			System.out.println("Compare Coord"+cP);
+//			if(cP.getAbsc() == c.getAbsc() && cP.getOrd() == c.getOrd()) {
+//				int idx = this.playersCoord.indexOf(cP);
+//				System.out.println("Id trouvee = " +idx);
+//				return idx;
+//			}
+//		}
+//		System.out.println("Id trouvee = " +-1);
+		for(Coord cP : getCoordPlayersAlive()) {
+		if(cP.getAbsc() == c.getAbsc() && cP.getOrd() == c.getOrd()) {
+			int idx = getCoordPlayersAlive().indexOf(cP);
+			System.out.println("Id trouvee = " +getIdPlayersAlive().get(idx));
+			return getIdPlayersAlive().get(idx);
+		}
+	}
+		return -1;
+	}
+	
 	public String getStringPlayer(int id) {
 		return this.playersList.get(id).toString();
 	}
@@ -214,6 +242,57 @@ public class Players {
 	 */
 	public boolean addCle(int element) {
 		return this.playersList.get(activePlayer).addCle(element);
+	}
+	
+
+	/**
+	 * Ajoute ou soustrait le nouvel inventaire a celui du player id
+	 * @param id
+	 * @param add Ajoute ?
+	 * @param newInventaire
+	 * @return
+	 */
+	public boolean modInventaire(int id, boolean add, int[][] newInventaire) {
+		boolean reussite = true;
+		if(add) {
+			for(int i = 0; i<newInventaire.length; i++) {
+				for(int el = 0; el<newInventaire[0].length; el++) {
+					if(i==0) {
+						for(int qt = 0; qt< newInventaire[0][el]; qt++) {
+							if(! getPlayer(id).addArtefact(el)) {
+								reussite = false;
+							}
+						}
+					} else {
+						for(int qt = 0; qt< newInventaire[1][el]; qt++) {
+							if(! getPlayer(id).addCle(el)) {
+								reussite = false;
+							}
+						}
+					}
+				}
+			}
+		} else {
+			for(int i = 0; i<newInventaire.length; i++) {
+				for(int el = 0; el<newInventaire[0].length; el++) {
+					if(i==0) {
+						for(int qt = 0; qt< newInventaire[0][el]; qt++) {
+							if(! getPlayer(id).removeArtefact(el)) {
+								reussite = false;
+							}
+						}
+					} else {
+						for(int qt = 0; qt< newInventaire[1][el]; qt++) {
+							if(! getPlayer(id).removeCle(el)) {
+								reussite = false;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return reussite;
 	}
 	
 	/**

@@ -48,6 +48,7 @@ public class Controleur implements ActionListener {
 	 * Echange
 	 */
 	private int[][] plateformeEchange = new int[2][4]; //A la maniere d un inventaire
+	private boolean premierEchange;
 	
 	/**
 	 * Cree un controleur gerant la partie
@@ -82,6 +83,7 @@ public class Controleur implements ActionListener {
 				this.plateformeEchange[i][j] = 0;
 			}
 		}
+		premierEchange = true;
 	}
 	
 	
@@ -100,81 +102,119 @@ public class Controleur implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(! partieFinie) {
-			if(e.getSource() == this.cmds.finTour) {
-				resetEtat();
-				if(debutPartie == false) { //Si la partie n a pas encore commence
-					if(this.players.getNbPlayers()>0) { //Si il y a au moins 1 joueur
-						debutPartie = true;
-						this.grille.initPlayers(this.players.getNbPlayers());
-						this.grille.updatePlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
-						this.grille.update();
-						this.cmds.finTour.setText("Tour suivant");
-						this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
-						this.cmds.setInventaire(this.players.getInventaire());
-						String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant <br> puis sur la direction où vous voulez l'appliquer.<br>";
-						String str2 = "Vous pouvez effectuer 3 actions en 1 tour.";
-						//JOptionPane.showMessageDialog(null, str1+str2);
+		if(e.getSource() instanceof JButton) {
+			if(! partieFinie) {
+				if(e.getSource() == this.cmds.finTour) {
+					resetEtat();
+					if(debutPartie == false) { //Si la partie n a pas encore commence
+						if(this.players.getNbPlayers()>0) { //Si il y a au moins 1 joueur
+							debutPartie = true;
+							this.grille.initPlayers(this.players.getNbPlayers());
+							this.grille.updatePlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+							this.grille.update();
+							this.cmds.finTour.setText("Tour suivant");
+							this.cmds.changeActivePlayer(players.getId(), players.getActionsRes());
+							this.cmds.setInventaire(this.players.getInventaire());
+							String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant <br> puis sur la direction où vous voulez l'appliquer.<br>";
+							String str2 = "Vous pouvez effectuer 3 actions en 1 tour.";
+							//JOptionPane.showMessageDialog(null, str1+str2);
+							JOptionPane.showMessageDialog(
+			                        null,
+			                        new JLabel("<html>"+str1+str2+"</html>", JLabel.CENTER),
+			                        "Instructions",  JOptionPane.INFORMATION_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
+						}
+						
+					} else { //Partie commencee
+						//Chercher les cles
+						if ( ! ile.updateIle()) { //Mise a jour de l ile
+							endGame(false);
+						}
+						chercheCle();
+						this.ile.checkZones();
+						this.players.checkPlayers();
+						 //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
+						changePlayer();
+						verifiePlayers();
+						verifieZones();
+						this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
+					}
+				} else if (e.getSource() == this.cmds.addPlayer) {
+					if(debutPartie == false) {
+						if(this.players.getNbPlayers()<=20) {
+							addPlayer();
+						}
+					}
+				}
+				if(debutPartie) {
+					if (e.getSource() == this.cmds.move) {  //Actions
+						resetEtat();
+						this.move = true;
+						selectJButton(this.cmds.move, false);
+					} else if (e.getSource() == this.cmds.asseche) { 
+						resetEtat();
+						this.asseche = true;
+						selectJButton(this.cmds.asseche, false);
+					} else if (e.getSource() == this.cmds.artefact) { 
+						resetEtat();
+						this.searchArtefacts = true;
+						selectJButton(this.cmds.artefact, false);
+					} else if (e.getSource() == this.cmds.echange) { 
+						resetEtat();
+						if(getSommeTab(this.players.getInventaire())>0) {
+							this.echange = true;
+							selectJButton(this.cmds.echange, false);
+							if(this.premierEchange) {
+								String str1 = "Pour donner quelque chose à un joueur, veuillez d'abord selectionner les objets à echanger.";
+								String str2 = "Puis selectionner le joueur adjacent a l'aide des fleches.";
+								JOptionPane.showMessageDialog(null,"<html>"+ str1+"<br>"+str2+"</html>", "L'art du troc", JOptionPane.INFORMATION_MESSAGE);
+							}
+						} else {
+							ImageIcon fauche = new ImageIcon(((new ImageIcon("images/fauche.jpg")).getImage()).getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH));
+							JOptionPane.showMessageDialog(
+			                        null,
+			                        new JLabel("Vous n'avez rien à échanger !", fauche, JLabel.LEFT),
+			                        "Fauché !", JOptionPane.WARNING_MESSAGE);
+						}
+						
+						
+					} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
+						actionPos(Direction.up);
+					} else if (e.getSource() == this.cmds.down) {
+						actionPos(Direction.down);
+					} else if (e.getSource() == this.cmds.center) {
+						actionPos(Direction.center);
+					} else if (e.getSource() == this.cmds.right) {
+						actionPos(Direction.right);
+					} else if (e.getSource() == this.cmds.left) {
+						actionPos(Direction.left);
+					} else if(this.cmds.estInventaire((JButton) e.getSource())) {
+						if(echange) {
+							addToEtalage(this.cmds.estArtefact((JButton) e.getSource()), this.cmds.getElement((JButton) e.getSource()));
+						} else {
+							ImageIcon objet = this.cmds.getImageIcon(this.cmds.estArtefact((JButton) e.getSource()), this.cmds.getElement((JButton) e.getSource()));
 						JOptionPane.showMessageDialog(
 		                        null,
-		                        new JLabel("<html>"+str1+str2+"</html>", JLabel.CENTER),
-		                        "Instructions",  JOptionPane.INFORMATION_MESSAGE);
-					} else {
-						JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
+		                        new JLabel("", objet, JLabel.LEFT),
+		                        "Quel bel objet !", JOptionPane.PLAIN_MESSAGE);
+						}
+						
+					} else if(e.getSource() == this.cmds.clearEtalage) {
+						if(echange) {
+							resetEchange();
+						}
 					}
 					
-				} else { //Partie commencee
-					//Chercher les cles
-					if ( ! ile.updateIle()) { //Mise a jour de l ile
-						endGame(false);
-					}
-					chercheCle();
-					this.ile.checkZones();
-					this.players.checkPlayers();
-					 //Sauve les players et verifie fin du jeu -> Faire un verifie artefacts ?
-					changePlayer();
-					verifiePlayers();
-					verifieZones();
-					this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
-				}
-			} else if (e.getSource() == this.cmds.addPlayer) {
-				if(debutPartie == false) {
-					addPlayer();
-				}
-			}
-			if(debutPartie) {
-				if (e.getSource() == this.cmds.move) {  //Actions
-					resetEtat();
-					this.move = true;
-					selectJButton(this.cmds.move, false);
-				} else if (e.getSource() == this.cmds.asseche) { //Actions de positionnement
-					resetEtat();
-					this.asseche = true;
-					selectJButton(this.cmds.asseche, false);
-				} else if (e.getSource() == this.cmds.artefact) { //Actions de positionnement
-					resetEtat();
-					this.searchArtefacts = true;
-					selectJButton(this.cmds.artefact, false);
-				} else if (e.getSource() == this.cmds.up) { //Actions de positionnement
-					actionPos(Direction.up);
-				} else if (e.getSource() == this.cmds.down) {
-					actionPos(Direction.down);
-				} else if (e.getSource() == this.cmds.center) {
-					actionPos(Direction.center);
-				} else if (e.getSource() == this.cmds.right) {
-					actionPos(Direction.right);
-				} else if (e.getSource() == this.cmds.left) {
-					actionPos(Direction.left);
+				} else {
+					if (e.getSource() != this.cmds.addPlayer && e.getSource() != this.cmds.finTour) {
+						JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
+					}				
 				}
 				
 			} else {
-				if (e.getSource() != this.cmds.addPlayer && e.getSource() != this.cmds.finTour) {
-					JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
-				}				
+				JOptionPane.showMessageDialog(null, "La partie est déjà finie !","Où est passée l'île ?", JOptionPane.ERROR_MESSAGE); //Pour ne pas pouvoir continuer apres la fin
 			}
-			
-		} else {
-			JOptionPane.showMessageDialog(null, "La partie est déjà finie !","Où est passée l'île ?", JOptionPane.ERROR_MESSAGE); //Pour ne pas pouvoir continuer apres la fin
 		}
 		
 	}
@@ -201,13 +241,21 @@ public class Controleur implements ActionListener {
 			searchArtefacts = false;
 		}
 		if(echange) {
-			//selectJButton(this.cmds.artefact, true);
+			selectJButton(this.cmds.echange, true);
+			resetEchange();
 			echange = false;
+			
+		}
+	}
+	
+	private void resetEchange() {
+		if(echange) {
 			for(int i=0; i<this.plateformeEchange.length; i++) {
 				for(int j=0; j<this.plateformeEchange[0].length; j++) {
 					this.plateformeEchange[i][j] = 0;
 				}
 			}
+			this.cmds.setEtalage(plateformeEchange);
 		}
 	}
 	
@@ -347,7 +395,7 @@ public class Controleur implements ActionListener {
 			this.players.addCle(element);
 			JOptionPane.showMessageDialog(
                     null,
-                    new JLabel("Félicitation ! Vous avez trouvé une nouvelle clé !", this.cmds.getImageIcone(false, element), JLabel.LEFT),
+                    new JLabel("Félicitation ! Joueur "+this.players.getId()+" a trouvé une nouvelle clé !", this.cmds.getImageIcon(false, element), JLabel.LEFT),
                     "Un pas de plus vers les artefacts !", JOptionPane.INFORMATION_MESSAGE);
 			this.cmds.setInventaire(this.players.getInventaire());
 			
@@ -380,20 +428,23 @@ public class Controleur implements ActionListener {
 			if(this.move) {
 				if(this.ile.isSafe(newC)) {
 					if(this.ile.getZone(newC).getType().isExit()) {
-						boolean reussite = false;
+						boolean reussite = true;
 						int[] artefacts = this.players.moveHelico(true, reussite, newC);
 						if(reussite == true) {
 							if(this.ile.getZone(newC).getType() instanceof Heliport) {
 								Heliport heliport = (Heliport) this.ile.getZone(newC).getType();
 								heliport.addArtefact(artefacts);
+								this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
 							}
 						} else {
 							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","Vous n'êtes pas prêts pour l'heliport !", JOptionPane.WARNING_MESSAGE);
 						}
 					} else if(this.ile.getZone(this.players.getCoord()).getType().isExit()) {
 						boolean reussite = false;
-						int[] artefacts = this.players.moveHelico(false, reussite, newC);
-						if(reussite == true) {
+						//int[] artefacts = this.players.moveHelico(false, reussite, newC);
+						if(this.players.move(newC)) {
+							this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+							int[] artefacts = this.players.getInventaire()[0];
 							if(this.ile.getZone(newC).getType() instanceof Heliport) {
 								Heliport heliport = (Heliport) this.ile.getZone(newC).getType();
 								heliport.removeArtefact(artefacts);
@@ -401,6 +452,14 @@ public class Controleur implements ActionListener {
 						} else {
 							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","L'héliport est confortable hein ?", JOptionPane.WARNING_MESSAGE);
 						}
+//						if(reussite == true) {
+//							if(this.ile.getZone(newC).getType() instanceof Heliport) {
+//								Heliport heliport = (Heliport) this.ile.getZone(newC).getType();
+//								heliport.removeArtefact(artefacts);
+//							}
+//						} else {
+//							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","L'héliport est confortable hein ?", JOptionPane.WARNING_MESSAGE);
+//						}
 					} else {
 						if(! this.players.move(newC)) {
 							JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous déplacer là !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
@@ -434,7 +493,7 @@ public class Controleur implements ActionListener {
 								this.cmds.updateActionsPlayer(this.players.getActionsRes());
 								 JOptionPane.showMessageDialog(
 					                        null,
-					                        new JLabel("Félicitation ! Vous avez trouvé un nouvel artefact !", this.cmds.getImageIcone(true, element), JLabel.LEFT),
+					                        new JLabel("Félicitation ! Vous avez trouvé un nouvel artefact !", this.cmds.getImageIcon(true, element), JLabel.LEFT),
 					                        "Nouveau trésor !", JOptionPane.INFORMATION_MESSAGE);
 								 this.cmds.setInventaire(this.players.getInventaire());
 							}
@@ -444,24 +503,131 @@ public class Controleur implements ActionListener {
 						}
 						
 					}
+				} else {
+					JOptionPane.showMessageDialog(null, "Il n'y a pas d'artefact ici !","Ouvrez les yeux !", JOptionPane.WARNING_MESSAGE);
 				}
 			} else if(echange) {
-				boolean aEchange = false;
-				for(int i=0; i<this.plateformeEchange.length; i++) {
-					for(int j=0; j<this.plateformeEchange[0].length; j++) {
-						if(this.plateformeEchange[i][j] != 0) {
-							aEchange = true;
-						}
-					}
-				}
-				if(! aEchange) {
-					//Message Vous n'avez selectionne aucun objet a echanger !
-				} else {
-					
-				}
+				
+				doExchange(newC);
 			}
 			this.cmds.updateActionsPlayer(this.players.getActionsRes());
 		}
+	}
+	
+	/**
+	 * Donne les objets du player actif se situant dans la plateforme d echange au player sur la position c
+	 * @param c
+	 * @return
+	 */
+	private boolean doExchange(Coord c) {
+		System.out.println("Echange sur Coord"+c);
+		if(getSommeTab(plateformeEchange) == 0) {
+			JOptionPane.showMessageDialog(null, "Vous n'avez selectionné aucun objet à échanger !","Etalage vide", JOptionPane.WARNING_MESSAGE);
+			return false;
+		} else {
+			int id = this.players.getId(c);
+			System.out.println("Id joueur echange = "+id);
+			if(id != -1) {
+				if(! this.players.modInventaire(id, true, plateformeEchange)) {
+					System.out.println("Problem echange !");
+					return false;
+				} else {
+					ImageIcon troc = new ImageIcon(((new ImageIcon("images/echange.jpg")).getImage()).getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH));
+					JOptionPane.showMessageDialog(
+		                    null,
+		                    new JLabel("Vous avez donné "+ getListInventaire(plateformeEchange) + " à "+this.players.getStringPlayer(id), troc, JLabel.LEFT),
+		                    "Généreux", JOptionPane.INFORMATION_MESSAGE);
+					this.players.modInventaire(this.players.getId(), false, plateformeEchange);
+					resetEchange();
+					this.cmds.setInventaire(this.players.getInventaire());
+					this.players.play();
+					premierEchange = false;
+				}
+				return true;
+			} else {
+				ImageIcon whereP = new ImageIcon(((new ImageIcon("images/cherche_player.jpg")).getImage()).getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH));
+				JOptionPane.showMessageDialog(
+	                    null,
+	                    new JLabel("Il n'y a aucun joueur ici !", whereP, JLabel.LEFT),
+	                    "Regardez mieux !", JOptionPane.WARNING_MESSAGE);
+				return false;
+			}
+		}
+		
+	}
+	
+	/**
+	 * Ajoute l objet a la plateforme d echange
+	 * @param artefact
+	 * @param element
+	 * @return
+	 */
+	private boolean addToEtalage(boolean artefact, int element) {
+		int y;
+		if(artefact) {
+			y = 0;
+		} else {
+			y = 1;
+		}
+		if(this.players.getInventaire()[y][element] > this.plateformeEchange[y][element]) {
+			this.plateformeEchange[y][element]++;
+			this.cmds.setEtalage(plateformeEchange);
+			return true;
+		} else {
+			ImageIcon fauche = new ImageIcon(((new ImageIcon("images/fauche.jpg")).getImage()).getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH));
+			JOptionPane.showMessageDialog(
+                    null,
+                    new JLabel("Vous n'avez plus assez de stock de cet objet !", fauche, JLabel.LEFT),
+                    "Généreux", JOptionPane.WARNING_MESSAGE);
+			return false;
+		}
+	}
+	
+	/**
+	 * Retourne la liste des objets présents dans l'inventaire
+	 * @param inventaire
+	 * @return
+	 */
+	private String getListInventaire(int[][] inventaire) {
+		String list = "";
+		if(getSommeTab(plateformeEchange) == 0) {
+			return "Inventaire vide";
+		}
+		int count = 0;
+		for(int i = 0; i<inventaire.length; i++) {
+			for(int el = 0; el<inventaire[0].length; el++) {
+				if(i==0 && inventaire[i][el] != 0) {
+					if(count != 0) {
+						list += ", ";
+					}
+					list += "x"+inventaire[i][el]+" Artefact";
+					if(el == 0) {
+						list += " de l'eau";
+					} else if(el == 1) {
+						list += " du feu";
+					} else if(el == 2) {
+						list += " de l'air";
+					} else if(el == 3) {
+						list += " de la terre";
+					}
+				} else if(inventaire[i][el] != 0) {
+					if(count != 0) {
+						list += ", ";
+					}
+					list += "x"+inventaire[i][el]+" Clé";
+					if(el == 0) {
+						list += " de l'eau";
+					} else if(el == 1) {
+						list += " du feu";
+					} else if(el == 2) {
+						list += " de l'air";
+					} else if(el == 3) {
+						list += " de la terre";
+					}
+				}
+			}
+		}
+		return list;
 	}
 	
 	
@@ -517,6 +683,16 @@ public class Controleur implements ActionListener {
 			
 		}
 		this.partieFinie = true;
+	}
+	
+	private int getSommeTab(int[][] tab) {
+		int sum = 0;
+		for(int i = 0; i<tab.length;i++) {
+			for(int j = 0; j<tab[0].length; j++) {
+				sum+= tab[i][j];
+			}
+		}
+		return sum;
 	}
 	
 	

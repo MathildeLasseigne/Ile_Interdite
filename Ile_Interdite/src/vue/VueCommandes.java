@@ -22,6 +22,7 @@ public class VueCommandes extends JPanel {
 	public JButton move;
 	public JButton asseche;
 	public JButton artefact;
+	public JButton echange;
 	
 	/**
 	 * Positionnement
@@ -57,6 +58,11 @@ public class VueCommandes extends JPanel {
 	private ImageIcon cleAirImg;
 	private ImageIcon cleTerreImg;
 	
+	//Echange
+	private ImageIcon caseEtalage;
+	private JLabel[][] etalage = new JLabel[4][2];
+	public JButton clearEtalage;
+	
 	
 	/**
      * Controleur
@@ -89,7 +95,7 @@ public class VueCommandes extends JPanel {
 		
 		//Passage de tour  Ligne 1-3
 		int debutTour = 1;
-		idPlayer = new JLabel("Joueur _ ", JLabel.CENTER);
+		idPlayer = new JLabel("Actif : Joueur _ ", JLabel.CENTER);
 		c.gridx = 1;
 		c.gridy = debutTour+1;
 		c.ipady = 40;
@@ -134,6 +140,12 @@ public class VueCommandes extends JPanel {
 		c.gridy = debutAction;
 		this.add(artefact, c);
 		artefact.addActionListener(ctrl);
+		
+		echange = new JButton("Echange");
+		c.gridx = 4;
+		c.gridy = debutAction;
+		this.add(echange, c);
+		echange.addActionListener(ctrl);
 		
 		
 		
@@ -252,6 +264,29 @@ public class VueCommandes extends JPanel {
 		this.add(cleTerre, c);
 		cleTerre.addActionListener(ctrl);
 		
+		//Echange
+		int debutEtalageY = 13;
+		JLabel echangeLab = new JLabel("Etalage :", JLabel.CENTER);
+		c.gridx = 0;
+		c.gridy = debutEtalageY;
+		this.add(echangeLab, c);
+		
+		this.caseEtalage =  new ImageIcon(((new ImageIcon("images/caseEtalage.jpg")).getImage()).getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH));
+		int debutEtalageX = 1;
+		for(int i = 0; i<etalage.length; i++) {
+			for(int j=0; j<etalage[0].length; j++) {
+				etalage[i][j] = new JLabel(this.caseEtalage);
+				c.gridx = debutEtalageX+j;
+				c.gridy = debutEtalageY+1+i;
+				this.add(etalage[i][j], c);
+			}
+		}
+		
+		this.clearEtalage = new JButton("Clear Etalage");
+		c.gridx = 3;
+		c.gridy = debutEtalageY+3;
+		this.add(this.clearEtalage, c);
+		this.clearEtalage.addActionListener(ctrl);
 		
 		
 	}
@@ -359,6 +394,24 @@ public class VueCommandes extends JPanel {
 			this.cleTerre.setText("x"+cles[3]);
 		}
 	}
+	/**
+	 * Affiche la plateforme d echange et les objets qu'elle contient
+	 * @param plateformeEchange
+	 */
+	public void setEtalage(int[][] plateformeEchange) {
+		for(int i = 0; i<plateformeEchange.length; i++) {
+			for(int j = 0; j<plateformeEchange[0].length; j++) {
+				if(plateformeEchange[i][j] == 0) {
+					this.etalage[j][i].setIcon(this.caseEtalage);
+					this.etalage[j][i].setText("");
+				} else {
+					ImageIcon marchandise = new ImageIcon(((getImageIcon(i==0, j)).getImage()).getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH));
+					this.etalage[j][i].setIcon(marchandise);
+					this.etalage[j][i].setText("x"+ plateformeEchange[i][j]);
+				}
+			}
+		}
+	}
 	
 	private void setImages() {
 		int scale = 30;
@@ -382,7 +435,7 @@ public class VueCommandes extends JPanel {
 	 * @param element
 	 * @return
 	 */
-	public ImageIcon getImageIcone(boolean artefact, int element) {
+	public ImageIcon getImageIcon(boolean artefact, int element) {
 		if(artefact) {
 			if(element == 0) {
 				return new ImageIcon("images/artefact_eau.png");
@@ -405,6 +458,33 @@ public class VueCommandes extends JPanel {
 			}
 		}
 		
+	}
+	
+	/**
+	 * Verifie si le bouton est bien celui d'un inventaire
+	 * @param button
+	 * @return
+	 */
+	public boolean estInventaire(JButton button) {
+		return (button==artEau || button==artFeu || button==artAir || button==artTerre || button==cleEau || button==cleFeu || button==cleAir || button==cleTerre);
+	}
+	
+	public boolean estArtefact(JButton button) {
+		return button==artEau || button==artFeu || button==artAir || button==artTerre;
+	}
+	
+	public int getElement(JButton button) {
+		if(button==artEau || button==cleEau) {
+			return 0;
+		} else if(button==artFeu || button==cleFeu) {
+			return 1;
+		} else if(button==artAir || button==cleAir) {
+			return 2;
+		} else if(button==artTerre || button==cleTerre) {
+			return 3;
+		} else {
+			return -1;
+		}
 	}
 
 }

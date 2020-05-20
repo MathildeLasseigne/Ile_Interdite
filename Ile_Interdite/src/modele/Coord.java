@@ -27,6 +27,7 @@ public class Coord {
 		return "("+absc+", "+ord+")";
 	}
 	
+	@Override
 	public boolean equals(Object x) {
 		if(x instanceof Coord) {
 			Coord c = (Coord) x;
