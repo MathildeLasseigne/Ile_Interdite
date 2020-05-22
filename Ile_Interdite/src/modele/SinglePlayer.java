@@ -5,6 +5,8 @@ public class SinglePlayer {
 	private int id;
 	private Coord coord;
 	
+	private Role role;
+	
 	private int totalAction;
 	
 	/**
@@ -38,6 +40,14 @@ public class SinglePlayer {
 	
 	public int getTotalAction() {
 		return this.totalAction;
+	}
+	
+	public Role getRole() {
+		return this.role;
+	}
+	
+	protected void setRole(Role role) {
+		this.role = role;
 	}
 	
 	/**

@@ -53,7 +53,8 @@ public class Heliport extends Type {
 	 */
 	public void removeArtefact(int[] artefacts) {
 		for(int i = 0; i<this.artefacts.length; i++) {
-			this.artefacts[i] -= artefacts[i];
+			int nb = artefacts[i];
+			this.artefacts[i] -= nb;
 			if(this.artefacts[i] < 0) {
 				System.out.println("Nb artefacts heliport negatif !");
 			}

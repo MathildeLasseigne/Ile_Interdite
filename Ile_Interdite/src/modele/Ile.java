@@ -33,6 +33,9 @@ public class Ile extends Observable {
 	 */
 	private int nbCoord;
 	
+	/**
+	 * Modele de l ile
+	 */
 	public Ile() {
 		initialize();
 	}
@@ -43,7 +46,7 @@ public class Ile extends Observable {
 	 */
 	public boolean updateIle() {
 		notifyObservers();
-		return inonde(15);
+		return inonde(12);
 		
 	}
 	
@@ -318,17 +321,63 @@ public class Ile extends Observable {
 		return vois;
 	}
 	
+
+	/**
+	 * Recuperer la liste des coord adjacentes a la coord c
+	 * @param c
+	 * @param diagonales Les diagonales sont-elles prises en compte ?
+	 * @param sub Prend en compte les zones submergees ?
+	 * @return
+	 */
+	private ArrayList<Coord> getListVoisins(Coord c, boolean diagonales, boolean sub){
+		if(! diagonales) {
+			if(sub) {
+				return getListVoisins(c);
+			} else {
+				ArrayList<Coord> vois = new ArrayList<>();
+				ArrayList<Coord> voisSub = getListVoisins(c);
+				for(Coord cVois : voisSub) {
+					if(! isSubmerged(cVois)) {
+						vois.add(cVois);
+					}
+				}
+				return vois;
+			}
+			
+		} else {
+			ArrayList<Coord> vois = getListVoisins(c);
+			Coord[] voisins = new Coord[4];
+			voisins[0] = new Coord(c.getAbsc()-1, c.getOrd()-1);
+			voisins[1] = new Coord(c.getAbsc()+1, c.getOrd()-1);
+			voisins[2] = new Coord(c.getAbsc()+1, c.getOrd()+1);
+			voisins[3] = new Coord(c.getAbsc()-1, c.getOrd()+1);
+			for(int i=0; i<4; i++) {
+				if(sub) {
+					if(estSurIle(voisins[i])) {
+						vois.add(voisins[i]);
+					}
+				} else {
+					if(estSurIle(voisins[i]) && !isSubmerged(voisins[i])) {
+						vois.add(voisins[i]);
+					}
+				}
+			}
+			
+			return vois;
+		}
+	}
+	
+
 	/**
 	 * Verifie si la coord c2 est voisine de la coord c (Quelque soit l etat de c)
 	 * @param c
 	 * @param c2
+	 * @param diagonales Les diagonales sont-elles prises en compte ?
 	 * @param sub true si on garde c2 submergés
 	 * @return
 	 */
-	public boolean estVoisin(Coord c1, Coord c2b, boolean sub) {
-		Coord c = c1;
-		Coord c2 = c2b;
-		ArrayList<Coord> vois = getListVoisins(c);
+	public boolean estVoisin(Coord c, Coord c2, boolean diagonales, boolean sub) {
+		ArrayList<Coord> vois = getListVoisins(c, diagonales, sub);
 		if (sub == false) {
 			if( ! submerg.contains(c2)) {
 				return vois.contains(c2) && estSurIle(c2);
@@ -599,8 +648,7 @@ public class Ile extends Observable {
 		return isInSector(range, c.getAbsc(), c.getOrd());
 	}
 	
-	public boolean isSubmerged(Coord c1) {
-		Coord c = c1;
+	public boolean isSubmerged(Coord c) {
 		if(this.submerg.contains(c) || c==null) {
 			return true;
 		}
@@ -641,6 +689,56 @@ public class Ile extends Observable {
 				System.out.println(this.shore.get(i)+" n'est pas enregistree en tant que shore "+this.shore.get(i)+" !");
 			}
 		}
+	}
+	
+
+	/**
+	 * Cherche la longueur du plus court chemin entre c1 et c2 avec la méthode de flooding
+	 * </br> (Voronoi Territoire)
+	 * </br> https://askcodez.com/comment-calculer-le-plus-court-chemin-entre-deux-points-dans-une-grille.html
+	 * </br> https://stackoverflow.com/questions/2288830/change-floodfill-algorithm-to-get-voronoi-territory-for-two-data-points/2288898#2288898
+	 * @param c1
+	 * @param c2
+	 * @param diagonales prend ont en compte les diagonales ?
+	 * @param sub prend ont en compte les zones submergees ?
+	 * @return
+	 */
+	public int searchShortestWay(Coord c1, Coord c2, boolean diagonales, boolean sub) {
+		if(c1.equals(c2)) {
+			return 0;
+		}
+		int f=0; // first element
+		int l = 0; //last element
+		int hauteur = HAUTEUR;
+		int largeur = LARGEUR;
+		Coord[] Q = new Coord[hauteur*largeur];  //La queue
+		int[][] nbWay = new int[hauteur][largeur]; //Tableau de remplissage
+		for(int i = 0; i<nbWay.length; i++) {
+			for(int j = 0; j< nbWay[0].length; j++) {
+				nbWay[i][j] = 0;
+			}
+		}
+		ArrayList<Coord> marked = new ArrayList<>();
+		Q[f] = c1;
+		marked.add(c1);
+		while(f<hauteur*largeur) {
+			Coord poz = Q[f];
+			++f;
+			int nb = nbWay[poz.getOrd()][poz.getAbsc()];
+			for(Coord poz_ : getListVoisins(poz, diagonales, sub)) {
+				if(! marked.contains(poz_)) {
+					marked.add(poz_);
+					nbWay[poz_.getOrd()][poz_.getAbsc()] = nb+1;
+					Q[++l] = poz_; //Ajout de poz_ a la queue
+					if(poz_.equals(c2)) {
+						return nbWay[poz_.getOrd()][poz_.getAbsc()];
+					}
+				}
+			}
+		}
+		
+		
+		return -1;
 	}
 	
 	

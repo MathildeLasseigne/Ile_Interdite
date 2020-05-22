@@ -14,6 +14,9 @@ public class Players {
 	public int actionsRestantes;
 	//public final int totalActions = 3;
 	
+	/**
+	 * La liste des players et l'ensemble des informations et commandes les concernant
+	 */
 	public Players() {
 		actionsRestantes = 0;
 		nbPlayers = 0;
@@ -35,6 +38,10 @@ public class Players {
 		actionsRestantes = playersList.get(activePlayer).getTotalAction();
 	}
 	
+	/**
+	 * Tant qu'il reste des actions disponibles, les diminuent de 1
+	 * @return
+	 */
 	public boolean play() {
 		if (actionsRestantes>0) {
 			actionsRestantes--;
@@ -139,13 +146,13 @@ public class Players {
 	public SinglePlayer getPlayer(Coord c, boolean dead) {
 		if(dead) {
 			for(SinglePlayer p : playersList) {
-				if(p.getCoord() == c) {
+				if(p.getCoord().equals(c) ) {
 					return p;
 				}
 			}
 		} else {
 			for(Coord cP : getCoordPlayersAlive()) {
-				if(cP == c) {
+				if(cP.equals(c)) {
 					int idx = getCoordPlayersAlive().indexOf(cP);
 					return getPlayer(getIdPlayersAlive().get(idx));
 				}
@@ -203,7 +210,7 @@ public class Players {
 //		}
 //		System.out.println("Id trouvee = " +-1);
 		for(Coord cP : getCoordPlayersAlive()) {
-		if(cP.getAbsc() == c.getAbsc() && cP.getOrd() == c.getOrd()) {
+		if(cP.equals(c)) {
 			int idx = getCoordPlayersAlive().indexOf(cP);
 			return getIdPlayersAlive().get(idx);
 		}

@@ -14,6 +14,9 @@ public class VueCommandes extends JPanel {
 	
 	private Color buttonBackground;
 	
+	private JLabel heliport;
+	private boolean surHeliport = false;
+	
 	/**
 	 * Actions
 	 */
@@ -83,15 +86,25 @@ public class VueCommandes extends JPanel {
 		this.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
-		//Ajout Joueurs  Ligne 0
-		nbPlayers = new JLabel("Nb Joueurs : 0 ", JLabel.CENTER);
+		JLabel game = new JLabel("<html><body><u>"+"L\'île interdite"+"</u></body></html>", JLabel.CENTER);
 		c.gridx = 1;
 		c.gridy = 0;
+		c.gridwidth = 3;
+		game.setFont(new Font("Arial",Font.BOLD,20));
+		game.setSize(50, 50);
+		this.add(game, c);
+		c.gridwidth = 1;
+		
+		//Ajout Joueurs  Ligne 0
+		int debutCmds = 1;
+		nbPlayers = new JLabel("Nb Joueurs : 0 ", JLabel.CENTER);
+		c.gridx = 1;
+		c.gridy = debutCmds;
 		this.add(nbPlayers, c);
 		
 		addPlayer = new JButton("+ player");
 		c.gridx = 2;
-		c.gridy = 0;
+		c.gridy = debutCmds;
 		this.add(addPlayer, c);
 		addPlayer.addActionListener(ctrl);
 		
@@ -99,7 +112,14 @@ public class VueCommandes extends JPanel {
 		
 		
 		//Passage de tour  Ligne 1-3
-		int debutTour = 1;
+		int debutTour = debutCmds+1;
+		ImageIcon heliportImg = new ImageIcon(((new ImageIcon("images/heliport.png")).getImage()).getScaledInstance(32, 32, java.awt.Image.SCALE_SMOOTH));
+		this.heliport = new JLabel(heliportImg, JLabel.CENTER);
+		c.gridx = 0;
+		c.gridy = debutTour+1;
+		this.add(this.heliport, c);
+		this.heliport.setVisible(false);
+		
 		idPlayer = new JLabel("Actif : Joueur _ ", JLabel.CENTER);
 		c.gridx = 1;
 		c.gridy = debutTour+1;
@@ -109,7 +129,7 @@ public class VueCommandes extends JPanel {
 		finTour = new JButton("Commencer"); //Deviens "Tour suivant" après le debut de la partie
 		c.gridx = 2;
 		c.gridy = debutTour;
-		c.gridheight = 3;
+		c.gridheight = 2;
 		c.gridwidth = 2;
 		//c.ipady = 40;
 		c.fill = GridBagConstraints.VERTICAL;
@@ -156,7 +176,7 @@ public class VueCommandes extends JPanel {
 		
 		
 		//Positionnement  Ligne 5-7
-		int debutPos = 5;
+		int debutPos = debutTour+4;
 		int alignementPos = 2;
 		
 		
@@ -205,7 +225,7 @@ public class VueCommandes extends JPanel {
 		
 		//Inventaire Ligne 8 - 12
 		//https://stackoverflow.com/questions/4801386/how-do-i-add-an-image-to-a-jbutton
-		int debutInventaire = 8;
+		int debutInventaire = debutPos+3;
 		inventaire = new JLabel("Inventaire : ", JLabel.CENTER);
 		c.gridx = 0;
 		c.gridy = debutInventaire;
@@ -293,7 +313,7 @@ public class VueCommandes extends JPanel {
 		
 		
 		//Echange
-		int debutEtalageY = 14;
+		int debutEtalageY = debutInventaire+5;
 		JLabel echangeLab = new JLabel("Etalage :", JLabel.CENTER);
 		c.gridx = 0;
 		c.gridy = debutEtalageY;
@@ -324,8 +344,8 @@ public class VueCommandes extends JPanel {
 	 * @param id Joueur actif
 	 * @param actions Nombre d actions restantes
 	 */
-	public void changeActivePlayer(int id, int actions) {
-		idPlayer.setText("Joueur "+id+" ");
+	public void changeActivePlayer(String player, int actions) {
+		idPlayer.setText("Actif : "+player+" ");
 		updateActionsPlayer(actions);
 	}
 	
@@ -403,7 +423,7 @@ public class VueCommandes extends JPanel {
 		} else {
 			if(! this.cleEau.isVisible()) {
 				this.cleEau.setVisible(true);
-				this.backgroundInventaire[1][1].setVisible(false);
+				this.backgroundInventaire[1][0].setVisible(false);
 			}
 			this.cleEau.setText("x"+cles[0]);
 		}
@@ -528,6 +548,14 @@ public class VueCommandes extends JPanel {
 			return 3;
 		} else {
 			return -1;
+		}
+	}
+	
+	public void informHeliport(boolean surHeliport) {
+		if(surHeliport) {
+			this.heliport.setVisible(true);
+		} else {
+			this.heliport.setVisible(false);
 		}
 	}
 

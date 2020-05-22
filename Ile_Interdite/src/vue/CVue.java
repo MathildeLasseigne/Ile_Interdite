@@ -19,13 +19,9 @@ public class CVue {
 	 */
 	private VueGrille grille;
 	/**
-	 * Ensemble des boutons permettant des actions
+	 * Ensemble du panneau de commandes
 	 */
     private VueCommandes commandes;
-    /**
-     * Ensembles des fleches permettant les actions de positionnement
-     */
-    private VuePositionnement positionnement;
     
     /**
      * Controleur
@@ -60,13 +56,11 @@ public class CVue {
 	ctrl = new Controleur(ile, players);
 
 	/** Définition des deux vues et ajout à la fenêtre. */
-	grille = new VueGrille(ile, players);
+	grille = new VueGrille(ile, players, ctrl);
 	frame.add(grille);
 	ctrl.setGrille(grille);
 	commandes = new VueCommandes(ctrl);
 	frame.add(commandes);
-//	positionnement = new VuePositionnement(ctrl);
-//	frame.add(positionnement);
 	/**
 	 * Remarque : on peut passer à la méthode [add] des paramètres
 	 * supplémentaires indiquant où placer l'élément. Par exemple, si on

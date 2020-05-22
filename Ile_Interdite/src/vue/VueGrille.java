@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import controleur.Controleur;
 import modele.Artefact;
 import modele.Coord;
 import modele.Etat;
@@ -20,21 +21,29 @@ public class VueGrille extends JPanel implements Observer {
     private Ile ile;
     private Players players;
     
+    private Controleur ctrl;
+    
     /**Liste players**/
     private ArrayList<Coord> coordPlayersAlive = new ArrayList<>();
     private ArrayList<Integer> idPlayersAlive = new ArrayList<>();
     private int nbPlayers;
     private ArrayList<JLabel> charaPlayers = new ArrayList<>();
     
+    private JLabel heliport;
+    
     
     /** Définition d'une taille (en pixels) pour l'affichage des cellules. */
-    private final static int TAILLE = 30;
+    private final static int TAILLE = 32;
 	
-	public VueGrille(Ile nouvIle, Players players) {
+	public VueGrille(Ile nouvIle, Players players, Controleur control) {
 		this.ile = nouvIle;
 		this.players = players;
+		setControleur(control);
 		/** On enregistre la vue [this] en tant qu'observateur de [modele]. */
 		ile.addObserver(this);
+		
+		this.addMouseListener(ctrl);
+		this.addMouseMotionListener(ctrl);
 		
 		this.setLayout(null);
 		/**
@@ -51,6 +60,10 @@ public class VueGrille extends JPanel implements Observer {
 //		player1.setLocation(3*TAILLE, 4*TAILLE);
 //		player1.setSize(TAILLE, TAILLE);
 		
+	}
+	
+	public void setControleur(Controleur ctrl) {
+		this.ctrl = ctrl;
 	}
 
 	@Override
@@ -124,10 +137,7 @@ public class VueGrille extends JPanel implements Observer {
     		} else if(z.getType().isExit() && z.estAccessible()) {
     			g.setColor(Color.black);
     			g.drawOval(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE, TAILLE-1, TAILLE-1);
-    			ImageIcon heliportImg = new ImageIcon(((new ImageIcon("images/heliport.png")).getImage()).getScaledInstance(TAILLE, TAILLE, java.awt.Image.SCALE_SMOOTH));
-    			JLabel heliport = new JLabel(heliportImg, JLabel.CENTER);
-    			this.add(heliport);
-    			heliport.setLocation(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE);
+    			
     		}
     	}
     }
@@ -202,5 +212,40 @@ public class VueGrille extends JPanel implements Observer {
     	return Color.BLACK;
     }
     
+    /**
+     * Retourne la coord de la position des coord(x, y) en pixels
+     * @param x
+     * @param y
+     * @return
+     */
+    public Coord getCoord(int x, int y) {
+    	int absc = x/TAILLE;
+    	int ord = y/TAILLE;
+    	return new Coord(absc, ord);
+    }
+    
+    /**
+     * Initialise l heliport
+     * @param c la Coord de l heliport
+     */
+    public void initHeliport(Coord c) {
+//    	ImageIcon heliportImg = new ImageIcon(((new ImageIcon("images/heliport.jpg")).getImage()).getScaledInstance(TAILLE, TAILLE, java.awt.Image.SCALE_SMOOTH));
+//		this.heliport = new JLabel(heliportImg, JLabel.CENTER);
+		this.heliport = new JLabel("H", JLabel.CENTER);
+		this.heliport.setSize(TAILLE, TAILLE);
+		this.heliport.setFont(new Font("Arial",Font.BOLD,TAILLE));
+		this.add(heliport);
+		heliport.setLocation((c.getAbsc()*TAILLE)-1, c.getOrd()*TAILLE);
+    }
+    
+    /**
+     * Deplace le label du player id a la zone de coord c
+     * @param id
+     * @param c
+     */
+    public void movePlayerLabel(int id, Coord c) {
+    	this.charaPlayers.get(id).setLocation(c.getAbsc()*TAILLE, c.getOrd()*TAILLE);
+    	this.charaPlayers.get(id).setVisible(true);
+    }
 
 }
