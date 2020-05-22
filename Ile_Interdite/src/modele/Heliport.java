@@ -2,6 +2,7 @@ package modele;
 
 public class Heliport extends Type {
 	private int[] artefacts;
+	private int nbPlayers;
 	
 	
 	public Heliport() {
@@ -9,6 +10,7 @@ public class Heliport extends Type {
 		for(int i = 0; i<artefacts.length; i++) {
 			artefacts[i] = 0;
 		}
+		this.nbPlayers = 0;
 	}
 	
 	@Override
@@ -59,6 +61,28 @@ public class Heliport extends Type {
 				System.out.println("Nb artefacts heliport negatif !");
 			}
 		}
+	}
+	
+	/**
+	 * Retourne le nombre de players presents sur l heliport
+	 * @return
+	 */
+	public int getNbPlayers() {
+		return this.nbPlayers;
+	}
+	
+	/**
+	 * Ajoute 1 au nombre de players presents sur l heliport
+	 */
+	public void addPlayer() {
+		this.nbPlayers++;
+	}
+	
+	/**
+	 * Enleve 1 au nombre de players presents sur l heliport
+	 */
+	public void removePlayer() {
+		this.nbPlayers--;
 	}
 
 }

@@ -125,21 +125,24 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 							String str01 = "<u>But du jeu :</u>";
 							String str02 = "Vous êtes  un groupe d' explorateurs sur une île en train de couler.";
 							String str03 = "Vous êtes venus sur l'île dans le but de trouver 4 artefacts élémentaires.";
-							String str04 = "Travaillez ensemble pour récupérer les 4 artefacts et vous échapper de l'île par héliport !";
+							String str04 = "Travaillez ensemble pour récupérer les 4 artefacts et vous échapper de l'île par hélicoptère avant que celle ci ne soit totalement submergée !";
 							String str05 = "Mais attention ! Pour ouvrir les coffres renfermant les précieux artefacts, vous devrez trouver "+this.nbCleNecessaire+" clés correspondant à l'élément de chaque l'artefact !";
-							String str06 = "<u>Instructions :</u>";
-							String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant <br> puis sur la direction où vous voulez l'appliquer.";
+							String str06 = "<br><u>Instructions :</u>";
+							String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant, puis sur la direction où vous voulez l'appliquer.";
 							String str2 = "Vous pouvez effectuer plusieurs actions par tour.";
-							String str3 = "<u>Astuce :</u>";
-							String str4 = "Pour interagir avec le jeu vous pouvez utiliser le panneau de commandes <br>Ou ";
-							String str5 = "[Clic gauche] sur une zone pour s'y déplacer (ou méthode drag and drop)";
-							String str6 = "[Clic droit] sur une zone pour l'assècher";
-							String str7 = "[Clic molette] sur une zone pour récupérer l'artefact présent";
-							//JOptionPane.showMessageDialog(null, str1+str2);
+							String str22 = "Au début de chaque tour l'inondation gagnera du terrain. Vous cherchez également une clé, ce qui peut déclancher différents évenements.";
+							String str3 = "Pour interagir avec le jeu vous pouvez au choix : utiliser le panneau de commandes <br>Ou :";
+							String str4 = "[Clic gauche] sur une zone pour s'y déplacer (ou méthode drag and drop)";
+							String str5 = "[Clic droit] sur une zone pour l'assècher";
+							String str6 = "[Clic molette] sur une zone pour récupérer l'artefact présent";
+							String str7 = "<br><u>Astuce :</u>";
+							String str8 = "! Faites attention à ne pas laisser l'héliport ou les artefacts se faire submerger. Pour éviter cela, assèchez les zones inondées.";
+							String str9 = "Si vous n'avez pas assez de clés pour récupérer un artefact, demandez à l'un de vos camarades de vous les donner !";
+							
 							JOptionPane.showMessageDialog(
 			                        null,
-			                        new JLabel("<html>"+str01+"<br>"+str02+"<br>"+str03+"<br>"+str04+"<br>"+str05+"<br>"+str06+"<br>"+str1+"<br>"+str2+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"<br>"+str7+"</html>", JLabel.CENTER),
-			                        "Instructions",  JOptionPane.INFORMATION_MESSAGE);
+			                        new JLabel("<html>"+str01+"<br>"+str02+"<br>"+str03+"<br>"+str04+"<br>"+str05+"<br>"+str06+"<br>"+str1+"<br>"+str2+"<br>"+str22+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"<br>"+str7+"<br>"+str8+"<br>"+str9+"</html>", JLabel.CENTER),
+			                        "Règles du jeu",  JOptionPane.INFORMATION_MESSAGE);
 						} else {
 							JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
 						}
@@ -157,6 +160,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 						 
 						changePlayer();
 						chercheCle();
+						verifiePlayers(); //Au cas où inondation
 						this.cmds.informHeliport(this.players.getCoord().equals(this.ile.getHeliport()));
 						this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
 					}
@@ -371,7 +375,12 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 			endGame(false);
 		}
 		if(this.ile.getZone(this.ile.getHeliport()).getType().isFull()) {
-			endGame(true);
+			if(this.ile.getZone(this.ile.getHeliport()).getType() instanceof Heliport) {
+				Heliport heliport = (Heliport) this.ile.getZone(this.ile.getHeliport()).getType();
+				if(heliport.getNbPlayers() == this.players.getNbPlayersAlive()) {
+					endGame(true);
+				}
+			}
 		}
 	}
 	
@@ -498,6 +507,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 					if(this.ile.getZone(newC).getType() instanceof Heliport) {
 						Heliport heliport = (Heliport) this.ile.getZone(newC).getType();
 						heliport.addArtefact(artefacts);
+						heliport.addPlayer();
 						this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
 						this.cmds.informHeliport(this.players.getCoord().equals(this.ile.getHeliport()));
 					}
@@ -515,6 +525,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 					if(this.ile.getZone(initC).getType() instanceof Heliport) {
 						Heliport heliport = (Heliport) this.ile.getZone(initC).getType();
 						heliport.removeArtefact(artefacts);
+						heliport.removePlayer();
 						//this.cmds.informHeliport(this.players.getCoord().equals(this.ile.getHeliport()));
 						this.cmds.informHeliport(false);
 					}
