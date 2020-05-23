@@ -21,6 +21,7 @@ public class SinglePlayer {
 		this.id = id;
 		this.coord = c;
 		this.totalAction = 3;
+		this.role = new Citoyen();
 		
 		for(int i=0; i<inventaire.length; i++) {
 			for(int j=0; j<inventaire[0].length; j++) {
@@ -152,7 +153,7 @@ public class SinglePlayer {
 	}
 	
 	public String toString() {
-		return "Joueur "+this.id;
+		return this.role+" "+this.id;
 	}
 	
 	

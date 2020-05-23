@@ -1,6 +1,7 @@
 package modele;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Players {
 
@@ -64,6 +65,82 @@ public class Players {
 		return true;
 	}
 	
+	/**
+	 * Assigne les roles en fonction du nb de joueurs
+	 * <br> Au moins 3 : Pilote
+	 * <br> Au moins 5 : Explorateur & Ingenieur
+	 * <br> Au moins 7 : Navigateur & Plongeur
+	 * <br> Au moins 8 : Messager
+	 * @return
+	 */
+	public void assignRole() {
+		ArrayList<Integer> except = new ArrayList<>();
+		if(this.nbPlayers >= 3) {
+			int rand1 = this.rangedRandomIntExcept(0, this.nbPlayers-1, except);
+			except.add(rand1);
+			this.playersList.get(rand1).setRole(new Pilote());
+		}
+		if(this.nbPlayers >= 5 ) {
+			int rand2 = this.rangedRandomIntExcept(0, this.nbPlayers-1, except);
+			except.add(rand2);
+			int rand3 = this.rangedRandomIntExcept(0, this.nbPlayers-1, except);
+			except.add(rand3);
+			this.playersList.get(rand2).setRole(new Explorateur());
+			this.playersList.get(rand3).setRole(new Ingenieur());
+		}
+		if(this.nbPlayers >= 7) {
+			int rand4 = this.rangedRandomIntExcept(0, this.nbPlayers-1, except);
+			except.add(rand4);
+			int rand5 = this.rangedRandomIntExcept(0, this.nbPlayers-1, except);
+			except.add(rand5);
+			this.playersList.get(rand4).setRole(new Navigateur());
+			this.playersList.get(rand5).setRole(new Plongeur());
+		}
+		if(this.nbPlayers >= 8) {
+			int rand6 = this.rangedRandomIntExcept(0, this.nbPlayers-1, except);
+			except.add(rand6);
+			this.playersList.get(rand6).setRole(new Messager());
+		}
+	}
+	
+
+	/**
+	 * Verifie si le player possede le role correspondant
+	 * </br> 0 : Citoyen
+	 * </br> 1 : Pilote
+	 * </br> 2 : Ingenieur
+	 * </br> 3 : Explorateur
+	 * </br> 4 : Navigateur
+	 * </br> 5 : Plongeur
+	 * </br> 6 : Messager
+	 * @param role
+	 * @return
+	 */
+	public boolean estRole(int role) {
+		SinglePlayer p = getPlayer(activePlayer);
+		if(role == 0) {
+			return p.getRole() instanceof Citoyen;
+		} else if(role == 1) {
+			return p.getRole() instanceof Pilote;
+		} else if (role == 2) {
+			return p.getRole() instanceof Ingenieur;
+		} else if (role == 3) {
+			return p.getRole() instanceof Explorateur;
+		} else if (role == 4) {
+			return p.getRole() instanceof Navigateur;
+		} else if (role == 5) {
+			return p.getRole() instanceof Plongeur;
+		} else if (role == 6) {
+			return p.getRole() instanceof Messager;
+		} else {
+			return false;
+		}
+	}
+	
+	public String getExplanationPouvoir(int id) {
+		return getPlayer(id).getRole().getPower();
+	}
+	
 
 	/**
 	 * Deplace le player sur la coord c, position superposable avec autres players ou de la coord c
@@ -88,13 +165,62 @@ public class Players {
 		return getInventaire()[0];
 	}
 	
+	/**
+	 * Deplace le player sur la coord c, position superposable avec autres players ou de la coord c
+	 * @param to le player vas-il vers la position superposable (heliport)
+	 * @param reussite le mouvement as-t-il reussi ? A recuperer plus tard (pointeur)
+	 * @param cPlayer la coord du player a deplacer
+	 * @param c la coordonnee de l heliport
+	 * @return la liste des artefacts du player
+	 */
+	public int[] moveHelico(boolean to, boolean reussite, Coord cPlayer, Coord c) {
+		int id = getId(cPlayer);
+		if(to) {
+			if(actionsRestantes > 0) {
+				playersList.get(id).move(c);
+				playersCoord.set(id, c);
+				actionsRestantes--;
+				reussite = true;
+			} else {
+				reussite = false;
+			}
+		} else {
+			reussite = move(c);
+		}
+		return getInventaire(id)[0];
+	}
 	
+	/**
+	 * Deplace le player actif sur la coord c
+	 * @param c
+	 * @return
+	 */
 	public boolean move(Coord c) {
 		//if(! playersCoord.contains(c)) {
 		if(! getCoordPlayersAlive().contains(c)) {
 			if(actionsRestantes > 0) {
 				playersList.get(activePlayer).move(c);
 				playersCoord.set(activePlayer, c);
+				actionsRestantes--;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Deplace le player se trouvant sur la coord cPlayer sur la coord newC
+	 * @param cPlayer
+	 * @param newC
+	 * @return
+	 */
+	public boolean move(Coord cPlayer, Coord newC) {
+		if(! getCoordPlayersAlive().contains(newC)) {
+			if(getId(cPlayer) == -1) {
+				System.out.println("move() : Pas de player a la Coord"+cPlayer);
+			} else if(actionsRestantes > 0) {
+				playersList.get(getId(cPlayer)).move(newC);
+				playersCoord.set(getId(cPlayer), newC);
 				actionsRestantes--;
 				return true;
 			}
@@ -218,6 +344,10 @@ public class Players {
 		return -1;
 	}
 	
+	public Role getRole() {
+		return this.playersList.get(activePlayer).getRole();
+	}
+	
 	public String getStringPlayer(int id) {
 		return this.playersList.get(id).toString();
 	}
@@ -231,6 +361,10 @@ public class Players {
 	 */
 	public int[][] getInventaire(){
 		return this.playersList.get(activePlayer).getInventaire();
+	}
+	
+	private int[][] getInventaire(int id){
+		return this.playersList.get(id).getInventaire();
 	}
 	
 	/**
@@ -373,5 +507,19 @@ public class Players {
 				System.out.println(p+ " n'est pas enregistre !");
 			}
 		}
+	}
+	
+	private int rangedRandomIntExcept(int rangeMin, int rangeMax, ArrayList<Integer> except) {
+		Random r = new Random();
+		int randomValue = rangeMin + r.nextInt(rangeMax +1);
+		if(except != null) {
+			if((rangeMax - rangeMin) == except.size()) {
+				System.out.println("Aucun random int possible sans except");
+				return -1;
+			} else if(except.contains(randomValue)) {
+				rangedRandomIntExcept(rangeMin, rangeMax, except);
+			}
+		}
+		return randomValue;
 	}
 }

@@ -42,11 +42,12 @@ public class Ile extends Observable {
 	
 	/**
 	 * Met a jour l ile en l inondant
+	 * @param nbInnond Le nombre de zones a innonder
 	 * @return
 	 */
-	public boolean updateIle() {
+	public boolean updateIle(int nbInnond, boolean useShore) {
 		notifyObservers();
-		return inonde(12);
+		return inonde(nbInnond, useShore);
 		
 	}
 	
@@ -72,7 +73,7 @@ public class Ile extends Observable {
 		//Artefacts
 		for(int element = 0; element<4; element++) {
 			Coord cArt = getRandCoord(5);
-			while(artefacts.contains(cArt) || cArt == heliport) {
+			while(artefacts.contains(cArt) && cArt == heliport) {
 				cArt = getRandCoord(5);
 			}
 			artefacts.add(cArt);
@@ -85,42 +86,65 @@ public class Ile extends Observable {
 	 * 
 	 */
 	/**
+	 * 
+	 * @return
+	 */
+	/**
 	 * Inonde nb zones non submergees
 	 * @param nb Le nombre de zones a submerger
+	 * @param useShore Doit on innonder l ile a partir de la cote ?
 	 * @return Indique s'il reste assez de zones a submerger
 	 */
-	private boolean inonde(int nb) {
+	private boolean inonde(int nb, boolean useShore) {
 		if(this.nbCoord-submerg.size() < nb) {
 			return false;
 		}
 		
 		for (int i=0; i<nb; i++) {
 			Coord c;
-			c = getRandCoordVois();
+			c = getRandCoordVois(useShore);
 			subCoordList(territoire[c.getOrd()][c.getAbsc()]);
 			territoire[c.getOrd()][c.getAbsc()].inonde();
 			addCoordList(territoire[c.getOrd()][c.getAbsc()]);
-			shore.add(c);
-			cleanShore();
+			if(useShore) {
+				shore.add(c);
+				cleanShore();
+			}
 		}
 		
 		return true;
 	}
 	
 	/**
-	 * Recupere au hazard une coord parmis les voisines de shore qui ne sont pas submergees
+	 * 
 	 * @return
 	 */
-	private Coord getRandCoordVois() {
-		int rand = rangedRandomInt(0, shore.size()-1);
-		Coord c;
-		
-		c = getVoisin(shore.get(rand), false, null);
-		if (c==null) {
-			c = getRandCoordVois();
+	/**
+	 * Recupere au hazard une coord parmis les voisines qui ne sont pas submergees
+	 * @param shore ne prendont en compte que les voisines de shore ?
+	 * @return
+	 */
+	private Coord getRandCoordVois(boolean shoreBool) {
+		if(shoreBool) {
+			int rand = rangedRandomInt(0, this.shore.size()-1);
+			Coord c;
+			
+			c = getVoisin(this.shore.get(rand), false, null);
+			if (c==null) {
+				c = getRandCoordVois(shoreBool);
+			}
+			
+			return c;
+		} else {
+			Coord c;
+			
+			c = getVoisin(rangedRandomCoord(0,LARGEUR-1, 0, HAUTEUR-1), false, null);
+			if (c==null) {
+				c = getRandCoordVois(shoreBool);
+			}
+			return c;
 		}
 		
-		return c;
 	}
 	
 //	/**
@@ -536,10 +560,10 @@ public class Ile extends Observable {
 	
 	/**
 	 * Recupere une coord random tant qu elle est sur l ile
-	 * @param x1
-	 * @param x2
-	 * @param y1
-	 * @param y2
+	 * @param x1 x min
+	 * @param x2 x max
+	 * @param y1 y min
+	 * @param y2 y max
 	 * @return
 	 */
 	public Coord rangedRandomCoord(int x1, int x2, int y1, int y2) {

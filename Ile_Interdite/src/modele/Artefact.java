@@ -57,7 +57,19 @@ public class Artefact extends Type {
 		return this.element;
 	}
 
-
+	public String toString() {
+		String str = "Artefact ";
+		if(this.element == 0) {
+			str += " de l'eau]";
+		} else if(this.element == 1) {
+			str += " du feu]";
+		} else if(this.element == 2) {
+			str += " de l'air]";
+		} else if(this.element == 3) {
+			str += " de la terre]";
+		}
+		return str;
+	}
 	
 
 }

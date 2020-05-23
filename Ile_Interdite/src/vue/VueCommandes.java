@@ -10,6 +10,7 @@ public class VueCommandes extends JPanel {
 	public JLabel idPlayer;
 	public JLabel actionsPlayer;
 	public JLabel nbPlayers;
+	public JLabel exPouvoirs;
 	public JLabel inventaire;
 	
 	private Color buttonBackground;
@@ -21,7 +22,10 @@ public class VueCommandes extends JPanel {
 	 * Actions
 	 */
 	public JButton addPlayer;
+	public JButton difficulte;
+	public JButton shore;
 	public JButton finTour;
+	public JButton pouvoir;
 	public JButton move;
 	public JButton asseche;
 	public JButton artefact;
@@ -35,6 +39,10 @@ public class VueCommandes extends JPanel {
 	public JButton center;
 	public JButton right;
 	public JButton left;
+	public JButton NE;
+	public JButton SE;
+	public JButton SO;
+	public JButton NO;
 	
 	/**
 	 * Inventaire
@@ -98,20 +106,37 @@ public class VueCommandes extends JPanel {
 		//Ajout Joueurs  Ligne 0
 		int debutCmds = 1;
 		nbPlayers = new JLabel("Nb Joueurs : 0 ", JLabel.CENTER);
-		c.gridx = 1;
+		c.gridx = 0;
 		c.gridy = debutCmds;
 		this.add(nbPlayers, c);
 		
 		addPlayer = new JButton("+ player");
-		c.gridx = 2;
+		c.gridx = 1;
 		c.gridy = debutCmds;
 		this.add(addPlayer, c);
 		addPlayer.addActionListener(ctrl);
 		
 		this.buttonBackground = addPlayer.getBackground();
 		
+		this.difficulte = new JButton("Difficulté : Facile");
+		c.gridx = 2;
+		c.gridy = debutCmds;
+		c.gridwidth = 2;
+		this.add(this.difficulte, c);
+		this.difficulte.addActionListener(ctrl);
+		c.gridwidth = 1;
 		
-		//Passage de tour  Ligne 1-3
+		this.shore = new JButton("Côte");
+		c.gridx = 4;
+		c.gridy = debutCmds;
+		c.gridwidth = 2;
+		this.shore.setPreferredSize(new Dimension(150, 25));
+		this.add(this.shore, c);
+		this.shore.addActionListener(ctrl);
+		c.gridwidth = 1;
+		
+		
+		//Passage de tour  Ligne 1-3 
 		int debutTour = debutCmds+1;
 		ImageIcon heliportImg = new ImageIcon(((new ImageIcon("images/heliport.png")).getImage()).getScaledInstance(32, 32, java.awt.Image.SCALE_SMOOTH));
 		this.heliport = new JLabel(heliportImg, JLabel.CENTER);
@@ -124,6 +149,7 @@ public class VueCommandes extends JPanel {
 		c.gridx = 1;
 		c.gridy = debutTour+1;
 		c.ipady = 40;
+		c.gridwidth = 2;
 		this.add(idPlayer, c);
 		
 		finTour = new JButton("Commencer"); //Deviens "Tour suivant" après le debut de la partie
@@ -141,8 +167,27 @@ public class VueCommandes extends JPanel {
 		c.ipady = 0;
 		c.fill = GridBagConstraints.NONE;
 		
+		
+		//Pouvoirs
+		int debutPouvoir = debutTour+3;
+		this.pouvoir = new JButton("Pouvoir :");
+		c.gridx = 0;
+		c.gridy = debutPouvoir;
+		this.add(this.pouvoir, c);
+		this.pouvoir.addActionListener(ctrl);
+		
+		this.exPouvoirs = new JLabel("__________________ ", JLabel.CENTER);
+		c.gridx = 1;
+		c.gridy = debutPouvoir;
+		c.gridwidth = 5;
+		this.add(this.exPouvoirs, c);
+		c.gridwidth = 1;
+		
+		
+		
+		
 		//Actions  Ligne 4
-		int debutAction = 4;
+		int debutAction = debutPouvoir+1;
 		actionsPlayer = new JLabel("Actions restantes: _ ", JLabel.CENTER);
 		c.gridx = 0;
 		c.gridy = debutAction;
@@ -176,7 +221,7 @@ public class VueCommandes extends JPanel {
 		
 		
 		//Positionnement  Ligne 5-7
-		int debutPos = debutTour+4;
+		int debutPos = debutTour+5;
 		int alignementPos = 2;
 		
 		
@@ -218,6 +263,38 @@ public class VueCommandes extends JPanel {
 		this.add(left, c);
 		left.addActionListener(ctrl);
 		
+		this.NE = new JButton("N-E");
+		c.gridx = alignementPos+1;
+		c.gridy = debutPos;
+		c.anchor = GridBagConstraints.WEST;
+		this.add(this.NE, c);
+		this.NE.addActionListener(ctrl);
+		this.NE.setVisible(false);
+		
+		this.SE = new JButton("S-E");
+		c.gridx = alignementPos+1;
+		c.gridy = debutPos+2;
+		c.anchor = GridBagConstraints.WEST;
+		this.add(this.SE, c);
+		this.SE.addActionListener(ctrl);
+		this.SE.setVisible(false);
+		
+		this.SO = new JButton("S-O");
+		c.gridx = alignementPos-1;
+		c.gridy = debutPos+2;
+		c.anchor = GridBagConstraints.EAST;
+		this.add(this.SO, c);
+		this.SO.addActionListener(ctrl);
+		this.SO.setVisible(false);
+		
+		this.NO = new JButton("N-O");
+		c.gridx = alignementPos-1;
+		c.gridy = debutPos;
+		c.anchor = GridBagConstraints.EAST;
+		this.add(this.NO, c);
+		this.NO.addActionListener(ctrl);
+		this.NO.setVisible(false);
+		
 		//reset
 		c.fill = GridBagConstraints.NONE;
 		c.anchor = GridBagConstraints.CENTER;
@@ -226,7 +303,7 @@ public class VueCommandes extends JPanel {
 		//Inventaire Ligne 8 - 12
 		//https://stackoverflow.com/questions/4801386/how-do-i-add-an-image-to-a-jbutton
 		int debutInventaire = debutPos+3;
-		inventaire = new JLabel("Inventaire : ", JLabel.CENTER);
+		inventaire = new JLabel("<html><u>Inventaire :</u> </html>", JLabel.CENTER);
 		c.gridx = 0;
 		c.gridy = debutInventaire;
 		this.add(inventaire, c);
@@ -314,7 +391,7 @@ public class VueCommandes extends JPanel {
 		
 		//Echange
 		int debutEtalageY = debutInventaire+5;
-		JLabel echangeLab = new JLabel("Etalage :", JLabel.CENTER);
+		JLabel echangeLab = new JLabel("<html><u>Etalage :</u></html>", JLabel.CENTER);
 		c.gridx = 0;
 		c.gridy = debutEtalageY;
 		this.add(echangeLab, c);
@@ -557,6 +634,54 @@ public class VueCommandes extends JPanel {
 		} else {
 			this.heliport.setVisible(false);
 		}
+	}
+	
+	/**
+	 * Modifie l affichage de la difficulte :
+	 * </br> 0 : Facile
+	 * </br> 1 : Moyenne
+	 * </br> 2 : Difficile
+	 * @param dif
+	 */
+	public void setDifficulte(int dif) {
+		String str = "Difficulté : ";
+		if(dif == 0) {
+			str += "Facile";
+		} else if(dif == 1) {
+			str += "Moyenne";
+		} else if(dif == 2) {
+			str += "Difficile";
+		} else {
+			str += "_";
+		}
+		this.difficulte.setText(str);
+	}
+	
+	/**
+	 * Marque les explications des capacites du role actif donnes en parametre
+	 * @param explanation
+	 */
+	public void setPouvoir(String explanation) {
+		this.exPouvoirs.setText(explanation);
+	}
+	
+	public void setShore(boolean useShore) {
+		if(useShore) {
+			this.shore.setText("Côte");
+		} else {
+			this.shore.setText("Marécage");
+		}
+	}
+	
+	/**
+	 * Active les boutons de diagonale
+	 * @param diago
+	 */
+	public void activateDiago(boolean diago) {
+		this.NE.setVisible(diago);
+		this.SE.setVisible(diago);
+		this.SO.setVisible(diago);
+		this.NO.setVisible(diago);
 	}
 
 }
