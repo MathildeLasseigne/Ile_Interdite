@@ -135,15 +135,17 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 						}
 						verifiePlayers(); //Sauve les players et verifie fin du jeu
 						verifieZones();
+						if(! this.partieFinie) {
+							this.ile.checkZones();
+							this.players.checkPlayers();
+							 
+							changePlayer();
+							chercheCle();
+							verifiePlayers(); //Au cas où inondation
+							this.cmds.informHeliport(this.players.getCoord().equals(this.ile.getHeliport()));
+							this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
+						}
 						
-						this.ile.checkZones();
-						this.players.checkPlayers();
-						 
-						changePlayer();
-						chercheCle();
-						verifiePlayers(); //Au cas où inondation
-						this.cmds.informHeliport(this.players.getCoord().equals(this.ile.getHeliport()));
-						this.cmds.setInventaire(this.players.getInventaire()); //Met a jour l affichage de l inventaire
 					}
 				} else if (e.getSource() == this.cmds.addPlayer) {
 					if(debutPartie == false) {
@@ -331,11 +333,19 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 					this.players.savePlayer(c, null);
 				}
 				if(nbMort != 0) {
-					
+					String pluriel = " est ";
+					if(nbMort>1) {
+						pluriel = " sont ";
+					}
+					ImageIcon noyade = new ImageIcon(((new ImageIcon("images/noyade.jpg")).getImage()).getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH));
+					JOptionPane.showMessageDialog(
+		                    null,
+		                    new JLabel("<html>Malheur ! "+ joueurs + pluriel + "mort !<br> Nous nous souviendrons de vous camarade !</html>", noyade, JLabel.LEFT),
+		                    "Rester sur l'île à jamais", JOptionPane.INFORMATION_MESSAGE);
 				}
 				
-				System.out.println("Old c :"+this.ile.isSubmerged(c));
-				System.out.println("New c :"+this.ile.isSubmerged(safeC));
+//				System.out.println("Old c :"+this.ile.isSubmerged(c));
+//				System.out.println("New c :"+this.ile.isSubmerged(safeC));
 			}
 		}
 		this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
@@ -913,127 +923,43 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if(debutPartie) {
-			if(this.players.getActionsRes()==0) {
-				JOptionPane.showMessageDialog(null, "Il ne vous reste plus d'action !","Il vous reste encore de l'énergie ?", JOptionPane.ERROR_MESSAGE);
-			} else {
-				Coord c = this.grille.getCoord(e.getX(), e.getY());
-				//System.out.print("mouseClicked ");
-				if(this.echange == true) {
-					if(this.ile.isSafe(c)) {
-						if(this.players.estRole(6) && ! this.players.getRole().getFinPower()) {
-							if(doExchange(c)) {
-								resetEtat();
-								if(! this.ile.estVoisin(this.players.getCoord(), c, false, false)){
-									this.players.getRole().utilisePower();
-								}
-							}
-						} else {
-							if(this.players.estRole(6) && this.players.getRole().getFinPower() && ! this.ile.estVoisin(this.players.getCoord(), c, false, false)) {
-								JOptionPane.showMessageDialog(null, "<html>Cette zone est trop loin !<br>Vous ne pouvez utiliser votre pouvoir que 1 fois par tour !<html>","Troc à distance", JOptionPane.WARNING_MESSAGE);
-							} else {
-								if(this.ile.estVoisin(this.players.getCoord(), c, false, false)) {
-									if(doExchange(c)) {
-										resetEtat();
-									}
-								} else {
-									JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
-								}
-							}
-							
-						}
-					}
-					
-				} else if(e.getButton() == MouseEvent.BUTTON1) {
-					int testWay = 1;
-					if(this.ile.isSafe(c)) {
-						if(! this.players.estRole(1) || (this.players.estRole(1) && this.players.getRole().getFinPower())) {
-							testWay = this.ile.searchShortestWay(this.players.getCoord(), c, this.players.estRole(3), this.players.estRole(5));
-							if(this.players.estRole(1) && this.players.getRole().getFinPower() && testWay > this.players.getActionsRes()) {
-								JOptionPane.showMessageDialog(null, "<html>Cette zone est trop loin !<br>Vous ne pouvez utiliser votre pouvoir que 1 fois par tour !<html>","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
-							}
-						}
-					}
-					//System.out.println("Test way = "+testWay+"<="+ this.players.getActionsRes()+" = "+ (testWay<=this.players.getActionsRes()));
-					if(testWay<=this.players.getActionsRes() && testWay != 0) {
+		if(! this.partieFinie) {
+			if(debutPartie) {
+				if(this.players.getActionsRes()==0) {
+					JOptionPane.showMessageDialog(null, "Il ne vous reste plus d'action !","Il vous reste encore de l'énergie ?", JOptionPane.ERROR_MESSAGE);
+				} else {
+					Coord c = this.grille.getCoord(e.getX(), e.getY());
+					//System.out.print("mouseClicked ");
+					if(this.echange == true) {
 						if(this.ile.isSafe(c)) {
-							move(c);
-							for(int act = 1; act < testWay; act++) {
-								this.players.play();
-							}
-							this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
-							if(this.players.estRole(1) && ! this.players.getRole().getFinPower() && (this.ile.searchShortestWay(this.players.getCoord(), c, this.players.estRole(3), this.players.estRole(5)) <= this.players.getActionsRes())) {
-								this.players.getRole().utilisePower();
+							if(this.players.estRole(6) && ! this.players.getRole().getFinPower()) {
+								if(doExchange(c)) {
+									resetEtat();
+									if(! this.ile.estVoisin(this.players.getCoord(), c, false, false)){
+										this.players.getRole().utilisePower();
+									}
+								}
+							} else {
+								if(this.players.estRole(6) && this.players.getRole().getFinPower() && ! this.ile.estVoisin(this.players.getCoord(), c, false, false)) {
+									JOptionPane.showMessageDialog(null, "<html>Cette zone est trop loin !<br>Vous ne pouvez utiliser votre pouvoir que 1 fois par tour !<html>","Troc à distance", JOptionPane.WARNING_MESSAGE);
+								} else {
+									if(this.ile.estVoisin(this.players.getCoord(), c, false, false)) {
+										if(doExchange(c)) {
+											resetEtat();
+										}
+									} else {
+										JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+									}
+								}
+								
 							}
 						}
-					} else if(c.equals(this.actifC)) {
-						JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
-					}
-				} else if (e.getButton() == MouseEvent.BUTTON2) {
-					if(this.ile.estVoisin(this.players.getCoord(), c, false, false)) {
-						searchArtefact(c);
-					} else {
-						JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
-					}
-				} else if (e.getButton() == MouseEvent.BUTTON3) {
-					if(this.ile.estVoisin(this.players.getCoord(), c, this.players.estRole(3), false)) {
-						asseche(c);
-					} else {
-						JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
-					}
-				}
-				this.cmds.updateActionsPlayer(this.players.getActionsRes());
-			}
-		}
-		
-		
-		
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		if(debutPartie) {
-			//System.out.println("mousePressed ("+e.getX()+", "+e.getY()+")");
-			Coord c = this.grille.getCoord(e.getX(), e.getY());
-			if(! c.equals(this.players.getCoord()) && this.players.estRole(4) && this.players.getId(c) != -1 && this.players.getRole().getFinPower()) {
-				JOptionPane.showMessageDialog(null, "<html>Vous ne pouvez utiliser votre pouvoir que 1 fois par tour !<br>Vous ne pouvez plus déplacer un autre joueur que vous même !<html>","Loi de la navigation", JOptionPane.WARNING_MESSAGE);
-			}
-			if((c.equals(this.players.getCoord())) || (! c.equals(this.players.getCoord()) && this.players.estRole(4) && this.players.getId(c) != -1 && ! this.players.getRole().getFinPower())) { //Verifie a la fois que on ne selectionne pas d autre joueur et n est pas clic et navigateur
-				this.actifC = c;
-				//System.out.println("ActifC = Coord"+ c);
-				if(e.getButton() == MouseEvent.BUTTON1) {
-					selectJButton(this.cmds.move, false);
-					this.move = true;
-				} else if(e.getButton() == MouseEvent.BUTTON2) {
-					selectJButton(this.cmds.artefact, false);
-					this.searchArtefacts = true;
-				} else if(e.getButton() == MouseEvent.BUTTON3) {
-					selectJButton(this.cmds.asseche, false);
-					this.asseche = true;
-				}
-			}
-		}
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		if(debutPartie) {
-			//System.out.println("Mouse released");
-			if(this.players.getActionsRes()==0) {
-				JOptionPane.showMessageDialog(null, "Il ne vous reste plus d'action !","Il vous reste encore de l'énergie ?", JOptionPane.ERROR_MESSAGE);
-				this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
-			} else if(this.echange == false) {
-				Coord c = this.grille.getCoord(e.getX(), e.getY());
-				if(e.getButton() == MouseEvent.BUTTON1) { //Se deplacer
-					
-					if((c.equals(this.ile.getHeliport()) && this.actifC != null && ! this.actifC.equals(this.players.getCoord())) && ! (! this.actifC.equals(this.players.getCoord()) && this.players.estRole(4) && this.players.getId(this.actifC) != -1)) {
-						JOptionPane.showMessageDialog(null, "<html>Vous ne pouvez pas déplacer votre joueur en utilisant cette méthode. <br> Veuillez utiliser une autre méthode ! <br><br> <u>Astuce :</u> Utilisez les flèches du tableau de commande ou cliquez la zone correspondante</html>",
-		                        "Heliport hors limite",  JOptionPane.PLAIN_MESSAGE);
-					} else if(this.players.getId(actifC) != -1) {
+						
+					} else if(e.getButton() == MouseEvent.BUTTON1) {
 						int testWay = 1;
 						if(this.ile.isSafe(c)) {
 							if(! this.players.estRole(1) || (this.players.estRole(1) && this.players.getRole().getFinPower())) {
-								testWay = this.ile.searchShortestWay(actifC, c, this.players.estRole(3), this.players.estRole(5));
+								testWay = this.ile.searchShortestWay(this.players.getCoord(), c, this.players.estRole(3), this.players.estRole(5));
 								if(this.players.estRole(1) && this.players.getRole().getFinPower() && testWay > this.players.getActionsRes()) {
 									JOptionPane.showMessageDialog(null, "<html>Cette zone est trop loin !<br>Vous ne pouvez utiliser votre pouvoir que 1 fois par tour !<html>","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
 								}
@@ -1041,40 +967,135 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 						}
 						//System.out.println("Test way = "+testWay+"<="+ this.players.getActionsRes()+" = "+ (testWay<=this.players.getActionsRes()));
 						if(testWay<=this.players.getActionsRes() && testWay != 0) {
-							boolean isPlayer = this.players.getId(this.actifC) != -1; //Besoin car bouge entre temps
-							boolean isActivePlayer = this.players.getId(this.actifC) == this.players.getId();
 							if(this.ile.isSafe(c)) {
 								move(c);
 								for(int act = 1; act < testWay; act++) {
 									this.players.play();
 								}
 								this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
-								if(this.actifC != null && ! isActivePlayer && this.players.estRole(4) && isPlayer && ! this.players.getRole().getFinPower()) {
-									this.players.getRole().utilisePower();
-									
-								} else if(this.players.estRole(1) && ! this.players.getRole().getFinPower() && (this.ile.searchShortestWay(actifC, c, this.players.estRole(3), this.players.estRole(5)) <= this.players.getActionsRes())) {
+								if(this.players.estRole(1) && ! this.players.getRole().getFinPower() && (this.ile.searchShortestWay(this.players.getCoord(), c, this.players.estRole(3), this.players.estRole(5)) <= this.players.getActionsRes())) {
 									this.players.getRole().utilisePower();
 								}
-								
-								
 							}
-						} else if(! c.equals(this.actifC)) {
+						} else if(c.equals(this.actifC)) {
+							JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+						}
+					} else if (e.getButton() == MouseEvent.BUTTON2) {
+						if(this.ile.estVoisin(this.players.getCoord(), c, false, false)) {
+							searchArtefact(c);
+						} else {
+							JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+						}
+					} else if (e.getButton() == MouseEvent.BUTTON3) {
+						if(this.ile.estVoisin(this.players.getCoord(), c, this.players.estRole(3), false)) {
+							asseche(c);
+						} else {
 							JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
 						}
 					}
-					//System.out.println(this.players.getCoord());
-					resetEtat();
-				} else if(e.getButton() == MouseEvent.BUTTON2) {
-					resetEtat();
-				} else if(e.getButton() == MouseEvent.BUTTON3) {
-					resetEtat();
+					this.cmds.updateActionsPlayer(this.players.getActionsRes());
 				}
-				this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
-				this.cmds.updateActionsPlayer(this.players.getActionsRes());
-				this.actifC = null;
-				//this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
 			}
+		} else {
+			JOptionPane.showMessageDialog(null, "La partie est déjà finie !","Où est passée l'île ?", JOptionPane.ERROR_MESSAGE); //Pour ne pas pouvoir continuer apres la fin
 		}
+
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		if(! this.partieFinie) {
+			if(debutPartie) {
+				//System.out.println("mousePressed ("+e.getX()+", "+e.getY()+")");
+				Coord c = this.grille.getCoord(e.getX(), e.getY());
+				if(! c.equals(this.players.getCoord()) && this.players.estRole(4) && this.players.getId(c) != -1 && this.players.getRole().getFinPower()) {
+					JOptionPane.showMessageDialog(null, "<html>Vous ne pouvez utiliser votre pouvoir que 1 fois par tour !<br>Vous ne pouvez plus déplacer un autre joueur que vous même !<html>","Loi de la navigation", JOptionPane.WARNING_MESSAGE);
+				}
+				if((c.equals(this.players.getCoord())) || (! c.equals(this.players.getCoord()) && this.players.estRole(4) && this.players.getId(c) != -1 && ! this.players.getRole().getFinPower())) { //Verifie a la fois que on ne selectionne pas d autre joueur et n est pas clic et navigateur
+					this.actifC = c;
+					//System.out.println("ActifC = Coord"+ c);
+					if(e.getButton() == MouseEvent.BUTTON1) {
+						selectJButton(this.cmds.move, false);
+						this.move = true;
+					} else if(e.getButton() == MouseEvent.BUTTON2) {
+						selectJButton(this.cmds.artefact, false);
+						this.searchArtefacts = true;
+					} else if(e.getButton() == MouseEvent.BUTTON3) {
+						selectJButton(this.cmds.asseche, false);
+						this.asseche = true;
+					}
+				}
+			}
+		} else {
+			JOptionPane.showMessageDialog(null, "La partie est déjà finie !","Où est passée l'île ?", JOptionPane.ERROR_MESSAGE); //Pour ne pas pouvoir continuer apres la fin
+		}
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		if(! this.partieFinie) {
+			if(debutPartie) {
+				//System.out.println("Mouse released");
+				if(this.players.getActionsRes()==0) {
+					JOptionPane.showMessageDialog(null, "Il ne vous reste plus d'action !","Il vous reste encore de l'énergie ?", JOptionPane.ERROR_MESSAGE);
+					this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+				} else if(this.echange == false) {
+					Coord c = this.grille.getCoord(e.getX(), e.getY());
+					if(e.getButton() == MouseEvent.BUTTON1) { //Se deplacer
+						
+						if((c.equals(this.ile.getHeliport()) && this.actifC != null && ! this.actifC.equals(this.players.getCoord())) && ! (! this.actifC.equals(this.players.getCoord()) && this.players.estRole(4) && this.players.getId(this.actifC) != -1)) {
+							JOptionPane.showMessageDialog(null, "<html>Vous ne pouvez pas déplacer votre joueur en utilisant cette méthode. <br> Veuillez utiliser une autre méthode ! <br><br> <u>Astuce :</u> Utilisez les flèches du tableau de commande ou cliquez la zone correspondante</html>",
+			                        "Heliport hors limite",  JOptionPane.PLAIN_MESSAGE);
+						} else if(this.players.getId(actifC) != -1) {
+							int testWay = 1;
+							if(this.ile.isSafe(c)) {
+								if(! this.players.estRole(1) || (this.players.estRole(1) && this.players.getRole().getFinPower())) {
+									testWay = this.ile.searchShortestWay(actifC, c, this.players.estRole(3), this.players.estRole(5));
+									if(this.players.estRole(1) && this.players.getRole().getFinPower() && testWay > this.players.getActionsRes()) {
+										JOptionPane.showMessageDialog(null, "<html>Cette zone est trop loin !<br>Vous ne pouvez utiliser votre pouvoir que 1 fois par tour !<html>","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+									}
+								}
+							}
+							//System.out.println("Test way = "+testWay+"<="+ this.players.getActionsRes()+" = "+ (testWay<=this.players.getActionsRes()));
+							if(testWay<=this.players.getActionsRes() && testWay != 0) {
+								boolean isPlayer = this.players.getId(this.actifC) != -1; //Besoin car bouge entre temps
+								boolean isActivePlayer = this.players.getId(this.actifC) == this.players.getId();
+								if(this.ile.isSafe(c)) {
+									move(c);
+									for(int act = 1; act < testWay; act++) {
+										this.players.play();
+									}
+									this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+									if(this.actifC != null && ! isActivePlayer && this.players.estRole(4) && isPlayer && ! this.players.getRole().getFinPower()) {
+										this.players.getRole().utilisePower();
+										
+									} else if(this.players.estRole(1) && ! this.players.getRole().getFinPower() && (this.ile.searchShortestWay(actifC, c, this.players.estRole(3), this.players.estRole(5)) <= this.players.getActionsRes())) {
+										this.players.getRole().utilisePower();
+									}
+									
+									
+								}
+							} else if(! c.equals(this.actifC)) {
+								JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+							}
+						}
+						//System.out.println(this.players.getCoord());
+						resetEtat();
+					} else if(e.getButton() == MouseEvent.BUTTON2) {
+						resetEtat();
+					} else if(e.getButton() == MouseEvent.BUTTON3) {
+						resetEtat();
+					}
+					this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+					this.cmds.updateActionsPlayer(this.players.getActionsRes());
+					this.actifC = null;
+					//this.grille.repaintPlayers(this.players.getCoordPlayersAlive(), this.players.getIdPlayersAlive());
+				}
+			}
+		} else {
+			JOptionPane.showMessageDialog(null, "La partie est déjà finie !","Où est passée l'île ?", JOptionPane.ERROR_MESSAGE); //Pour ne pas pouvoir continuer apres la fin
+		}	
 	}
 
 	@Override

@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.TransferHandler;
 
-@SuppressWarnings("serial")
+@SuppressWarnings({ "serial", "unused" })
 public class DragTest extends JFrame implements MouseMotionListener,
         MouseListener {
 
@@ -49,7 +49,7 @@ public class DragTest extends JFrame implements MouseMotionListener,
         dropLabel.setSize(labelSize);
         int x = e.getX() - labelSize.width / 2;
         int y = e.getY() - labelSize.height / 2;
-        //dropLabel.setLocation(x, y);
+        dropLabel.setLocation(x, y);
         leftPanel.add(dropLabel);
 
 
