@@ -24,7 +24,8 @@ public class Ile_Interdite {
 		/** Voici le contenu qui nous intéresse. */
                 Ile ile = new Ile();
                 Players players = new Players();
-                CVue vue = new CVue(ile, players);
+                @SuppressWarnings("unused")
+				CVue vue = new CVue(ile, players);
 	    });
     }
 

@@ -5,6 +5,7 @@ import javax.swing.*;
 
 import controleur.Controleur;
 
+@SuppressWarnings("serial")
 public class VueCommandes extends JPanel {
 
 	public JLabel idPlayer;
@@ -16,7 +17,6 @@ public class VueCommandes extends JPanel {
 	private Color buttonBackground;
 	
 	private JLabel heliport;
-	private boolean surHeliport = false;
 	
 	/**
 	 * Actions

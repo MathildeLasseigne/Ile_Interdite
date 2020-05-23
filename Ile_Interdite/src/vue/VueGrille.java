@@ -2,7 +2,6 @@ package vue;
 
 import java.util.*;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
 import controleur.Controleur;
@@ -14,19 +13,18 @@ import modele.Players;
 import modele.Zone;
 import observateur.Observer;
 
+@SuppressWarnings("serial")
 public class VueGrille extends JPanel implements Observer {
 
 	
 	/** On maintient une référence vers le modèle. */
     private Ile ile;
-    private Players players;
     
     private Controleur ctrl;
     
     /**Liste players**/
     private ArrayList<Coord> coordPlayersAlive = new ArrayList<>();
     private ArrayList<Integer> idPlayersAlive = new ArrayList<>();
-    private int nbPlayers;
     private ArrayList<JLabel> charaPlayers = new ArrayList<>();
     
     private JLabel heliport;
@@ -37,7 +35,6 @@ public class VueGrille extends JPanel implements Observer {
 	
 	public VueGrille(Ile nouvIle, Players players, Controleur control) {
 		this.ile = nouvIle;
-		this.players = players;
 		setControleur(control);
 		/** On enregistre la vue [this] en tant qu'observateur de [modele]. */
 		ile.addObserver(this);

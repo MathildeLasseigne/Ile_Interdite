@@ -1,7 +1,5 @@
 package controleur;
 
-import java.util.*;
-import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
@@ -14,7 +12,6 @@ import modele.Ingenieur;
 import modele.Players;
 import vue.VueCommandes;
 import vue.VueGrille;
-import vue.VuePositionnement;
 
 public class Controleur implements ActionListener, MouseMotionListener, MouseListener {
 	
@@ -29,12 +26,6 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 	 * MouseListener
 	 */
 	private Coord actifC;
-	private Coord newC;
-	
-	/**Heliport**/
-	
-	private ArrayList<Integer> playersOnHeli = new ArrayList<>();
-	private Coord heliport;
 	
 	/**
 	 * Difficulte
@@ -52,7 +43,6 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 	private boolean debutPartie;
 	private boolean partieFinie;
 	private boolean artefactPerdu;
-	private String strArtefactPerdu;
 	private boolean heliportPerdu;
 	
 	private boolean move;
@@ -82,7 +72,6 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 	 */
 	private void init() {
 		// Heliport
-		heliport = ile.getHeliport();
 		artefactPerdu = false;
 		
 		//Etats
@@ -141,7 +130,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 						
 					} else { //Partie commencee
 						//Chercher les cles
-						if ( ! ile.updateIle(this.nbInnond, this.useShore)) { //Mise a jour de l ile
+						if( ! ile.updateIle(this.nbInnond, this.useShore)) { //Mise a jour de l ile
 							endGame(false);
 						}
 						verifiePlayers(); //Sauve les players et verifie fin du jeu
@@ -172,7 +161,9 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 					}
 				}
 				if(debutPartie) {
-					if (e.getSource() == this.cmds.move) {  //Actions
+					if(e.getSource() == this.cmds.pouvoir) {
+						reglesJeu(2);
+					} else if(e.getSource() == this.cmds.move) {  //Actions
 						if(this.move == true) {
 							resetEtat();
 						} else {
@@ -518,7 +509,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 			if(this.ile.getZone(newC).getType().isExit()) { //heliport
 				boolean reussite = true;
 				int[] artefacts;
-				if(! this.actifC.equals(this.players.getCoord()) && this.players.estRole(4) && this.players.getId(this.actifC) != -1){ //navigateur
+				if(this.actifC != null && ! this.actifC.equals(this.players.getCoord()) && this.players.estRole(4) && this.players.getId(this.actifC) != -1){ //navigateur
 					artefacts = this.players.moveHelico(true, reussite, this.actifC, newC);
 				} else {
 					artefacts = this.players.moveHelico(true, reussite, newC);
@@ -537,7 +528,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 				
 			} else if(this.ile.getZone(this.players.getCoord()).getType().isExit()) {
 				System.out.println("Sors heliport");
-				if(! this.actifC.equals(this.players.getCoord()) && this.players.estRole(4)) {
+				if(this.actifC != null && ! this.actifC.equals(this.players.getCoord()) && this.players.estRole(4)) {
 					JOptionPane.showMessageDialog(null, "Vous ne pouvez pas sortir un autre joueur de l'heliport !","L'héliport est confortable hein ?", JOptionPane.WARNING_MESSAGE);
 				} else {
 					Coord initC = this.players.getCoord();
@@ -874,15 +865,20 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 	 * Affiche les regles du jeu a l ecran
 	 * </br> 0 : regle du jeu global
 	 * </br> 1 : regle des echanges
+	 * </br> 2 : regles des pouvoirs
 	 * @param regle la regle
 	 */
 	private void reglesJeu(int regle) {
 		if(regle == 0) {
+			String pluriel = "";
+			if(this.nbCleNecessaire > 1) {
+				pluriel = "s";
+			}
 			String str01 = "<u>But du jeu :</u>";
 			String str02 = "Vous êtes  un groupe d' explorateurs sur une île en train de couler.";
 			String str03 = "Vous êtes venus sur l'île dans le but de trouver 4 artefacts élémentaires.";
 			String str04 = "Travaillez ensemble pour récupérer les 4 artefacts et vous échapper de l'île par hélicoptère avant que celle ci ne soit totalement submergée !";
-			String str05 = "Mais attention ! Pour ouvrir les coffres renfermant les précieux artefacts, vous devrez trouver "+this.nbCleNecessaire+" clés correspondant à l'élément de chaque l'artefact !";
+			String str05 = "Mais attention ! Pour ouvrir les coffres renfermant les précieux artefacts, vous devrez trouver "+this.nbCleNecessaire+" clé"+pluriel+" correspondant à l'élément de chaque l'artefact !";
 			String str06 = "<br><u>Instructions :</u>";
 			String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant, puis sur la direction où vous voulez l'appliquer.";
 			String str2 = "Vous pouvez effectuer plusieurs actions par tour.";
@@ -894,16 +890,23 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 			String str7 = "<br><u>Astuce :</u>";
 			String str8 = "! Faites attention à ne pas laisser l'héliport ou les artefacts se faire submerger. Pour éviter cela, assèchez les zones inondées.";
 			String str9 = "Si vous n'avez pas assez de clés pour récupérer un artefact, demandez à l'un de vos camarades de vous les donner !";
+			String str10 = "Utilisez au maximum les pouvoirs que vous avez à disposition ! Vous trouverez leur guide d'utilisation en cliquant sur le bouton [Pouvoirs].";
 			
 			JOptionPane.showMessageDialog(
 	                null,
-	                new JLabel("<html>"+str01+"<br>"+str02+"<br>"+str03+"<br>"+str04+"<br>"+str05+"<br>"+str06+"<br>"+str1+"<br>"+str2+"<br>"+str22+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"<br>"+str7+"<br>"+str8+"<br>"+str9+"</html>", JLabel.CENTER),
+	                new JLabel("<html>"+str01+"<br>"+str02+"<br>"+str03+"<br>"+str04+"<br>"+str05+"<br>"+str06+"<br>"+str1+"<br>"+str2+"<br>"+str22+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"<br>"+str7+"<br>"+str8+"<br>"+str9+"<br>"+str10+"</html>", JLabel.CENTER),
 	                "Règles du jeu",  JOptionPane.INFORMATION_MESSAGE);
 		} else if (regle == 1) {
 			String str1 = "Pour donner quelque chose à un joueur, veuillez d'abord sélectionner les objets à échanger.";
 			String str2 = "Ils apparaitront dans votre étalage.";
 			String str3 = "Puis sélectionner un joueur adjacent à l'aide des flèches ou cliquez sur le joueur correspondant.";
 			JOptionPane.showMessageDialog(null,"<html>"+"<u>Instructions :</u><br><br>"+ str1+"<br>"+str2+"<br>"+str3+"</html>", "L'art du troc", JOptionPane.INFORMATION_MESSAGE);
+		} else if(regle ==2) {
+			String str1 = "Certains joueurs possèdent un rôle spécial, tel que Pilote, Ingénieur, Explorateur, Plongeur...";
+			String str2 = "Les personnes possèdant ces rôles ont accès à un pouvoir, actif ou passif. Si le pouvoir est actif, son coût en action sera écrit entre parenthèses.";
+			String str3 = "Une explication indiquant quel est votre pouvoir est écrite sur le tableau de commandes à droite du bouton pouvoir.";
+			String str4 = "Attention ! Les joueurs possèdant un pouvoir actif ne peuvent l'utiliser qu'une fois par tour !";
+			JOptionPane.showMessageDialog(null,"<html>"+"<u>Instructions :</u><br><br>"+ str1+"<br>"+str2+"<br>"+str3+"<br>"+str4+"</html>", "Pouvoir spéciaux", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 	}

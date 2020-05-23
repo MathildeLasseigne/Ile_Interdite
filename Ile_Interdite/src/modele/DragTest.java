@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.TransferHandler;
 
+@SuppressWarnings("serial")
 public class DragTest extends JFrame implements MouseMotionListener,
         MouseListener {
 

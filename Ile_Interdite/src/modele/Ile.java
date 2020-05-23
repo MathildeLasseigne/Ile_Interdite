@@ -73,7 +73,7 @@ public class Ile extends Observable {
 		//Artefacts
 		for(int element = 0; element<4; element++) {
 			Coord cArt = getRandCoord(5);
-			while(artefacts.contains(cArt) && cArt == heliport) {
+			while(artefacts.contains(cArt) || cArt.equals(heliport)) {
 				cArt = getRandCoord(5);
 			}
 			artefacts.add(cArt);
@@ -187,18 +187,6 @@ public class Ile extends Observable {
 	}
 	
 	
-	/**
-	 * Verifie si la coordonnee est sur la bordure de l'ile
-	 * @param c
-	 * @return
-	 */
-	private boolean estBordure(Coord c) {
-		if ((c.getAbsc() == LARGEUR-1) || (c.getAbsc() == 0) || (c.getOrd() == HAUTEUR-1) || (c.getOrd() == 0)) {
-			return true;
-		} else {
-			return false;
-		}
-	}
 	
 	/**
 	 * Verifie si la coordonnee est a l'interieur de l'ile

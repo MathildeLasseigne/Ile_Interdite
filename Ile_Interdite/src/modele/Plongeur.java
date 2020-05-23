@@ -13,7 +13,7 @@ public class Plongeur extends Role {
 
 	@Override
 	public String getPower() {
-		return "Peut traverser une zone submergée (coûte une action)";
+		return "Peut traverser une zone submergée";
 	}
 
 	@Override
