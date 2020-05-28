@@ -296,7 +296,7 @@ public class Ile extends Observable {
 		while (valid == false) {
 			vois = voisList.get(rangedRandomInt(0,voisList.size()-1));
 			voisins++;
-			if(voisins == 100) {
+			if(voisins == 30) {
 				return null;
 			}
 			if(except != null && except.isEmpty()) {

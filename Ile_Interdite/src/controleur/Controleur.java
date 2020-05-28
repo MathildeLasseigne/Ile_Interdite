@@ -125,7 +125,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 							this.cmds.setInventaire(this.players.getInventaire());
 							reglesJeu(0);
 						} else {
-							JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(null, "<html>"+"Veuillez d'abord selectionner le nombre de joueurs et lancer la partie"+"<br> Selectionnez aussi la difficulté et l'arrivée de l'inondation."+"</html>", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
 						}
 						
 					} else { //Partie commencee
@@ -252,7 +252,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 					
 				} else {
 					if (e.getSource() != this.cmds.addPlayer && e.getSource() != this.cmds.finTour && e.getSource() != this.cmds.difficulte && e.getSource() != this.cmds.shore) {
-						JOptionPane.showMessageDialog(null, "Veuillez d'abord selectionner le nombre de joueurs et lancer la partie", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null, "<html>"+"Veuillez d'abord selectionner le nombre de joueurs et lancer la partie"+"<br> Selectionnez aussi la difficulté et l'arrivée de l'inondation."+"</html>", "Trop d'enthousiasme !", JOptionPane.WARNING_MESSAGE);
 					}				
 				}
 				
@@ -884,28 +884,42 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 			if(this.nbCleNecessaire > 1) {
 				pluriel = "s";
 			}
+			String shore = "sur une île en train de couler";
+			String shore2 = "sur l'île";
+			String shore3 = "de l'île";
+			String shore4 = "celle ci";
+			String shore5 = "e";
+			if(! this.useShore) {
+				shore = "dans un marécage en train de se faire innonder";
+				shore2 = "dans ce marécage";
+				shore3 = "du marécage";
+				shore4 = "celui-ci";
+				shore5 = "";
+			}
 			String str01 = "<u>But du jeu :</u>";
-			String str02 = "Vous êtes  un groupe d' explorateurs sur une île en train de couler.";
-			String str03 = "Vous êtes venus sur l'île dans le but de trouver 4 artefacts élémentaires.";
-			String str04 = "Travaillez ensemble pour récupérer les 4 artefacts et vous échapper de l'île par hélicoptère avant que celle ci ne soit totalement submergée !";
+			String str02 = "Vous êtes  un groupe d' explorateurs "+shore+".";
+			String str03 = "Vous êtes venus "+shore2+" dans le but de trouver 4 artefacts élémentaires.";
+			String str04 = "Travaillez ensemble pour récupérer les 4 artefacts et vous échapper "+shore3+" par hélicoptère avant que "+shore4+" ne soit totalement submergé"+shore5+" !";
 			String str05 = "Mais attention ! Pour ouvrir les coffres renfermant les précieux artefacts, vous devrez trouver "+this.nbCleNecessaire+" clé"+pluriel+" correspondant à l'élément de chaque l'artefact !";
 			String str06 = "<br><u>Instructions :</u>";
 			String str1 = "Pour effectuer une action, cliquez sur le bouton correspondant, puis sur la direction où vous voulez l'appliquer.";
 			String str2 = "Vous pouvez effectuer plusieurs actions par tour.";
 			String str22 = "Au début de chaque tour l'inondation gagnera du terrain. Vous cherchez également une clé, ce qui peut déclancher différents évenements.";
-			String str3 = "Pour interagir avec le jeu vous pouvez au choix : utiliser le panneau de commandes <br>Ou :";
+			String str3 = "Pour interagir avec le jeu vous pouvez au choix : utiliser le panneau de commandes <br>Ou, directement sur la carte :";
 			String str4 = "[Clic gauche] sur une zone pour s'y déplacer (ou méthode drag and drop)";
 			String str5 = "[Clic droit] sur une zone pour l'assècher";
 			String str6 = "[Clic molette] sur une zone pour récupérer l'artefact présent";
 			String str7 = "<br><u>Astuce :</u>";
-			String str8 = "! Faites attention à ne pas laisser l'héliport ou les artefacts se faire submerger. Pour éviter cela, assèchez les zones inondées.";
-			String str9 = "Si vous n'avez pas assez de clés pour récupérer un artefact, demandez à l'un de vos camarades de vous les donner !";
-			String str10 = "Utilisez au maximum les pouvoirs que vous avez à disposition ! Vous trouverez leur guide d'utilisation en cliquant sur le bouton [Pouvoirs].";
-			String str11 = "Les artefacts sont représentés sur la carte par des croix.";
+			String str8 = "~ ! Faites attention à ne pas laisser l'héliport ou les artefacts se faire submerger. Pour éviter cela, assèchez les zones inondées.";
+			String str9 = "~ Si vous n'avez pas assez de clés pour récupérer un artefact, demandez à l'un de vos camarades de vous les donner !";
+			String str10 = "~ Utilisez au maximum les pouvoirs que vous avez à disposition ! Vous trouverez leur guide d'utilisation en cliquant sur le bouton [Pouvoirs].";
+			String str11 = "  Plus vous avez de camarades dans votre aventure, plus vous avez de chance de recruter quelqu'un possèdant un pouvoir spécial ! ";
+			String str12 = "~ Les artefacts sont représentés sur la carte par des croix.";
+			String str13 = "  Lorsque le joueur actif est situé sur l'héliport, une indication est affichée sur le panneau de commandes";
 			
 			JOptionPane.showMessageDialog(
 	                null,
-	                new JLabel("<html>"+str01+"<br>"+str02+"<br>"+str03+"<br>"+str04+"<br>"+str05+"<br>"+str06+"<br>"+str1+"<br>"+str2+"<br>"+str22+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"<br>"+str7+"<br>"+str8+"<br>"+str9+"<br>"+str10+"<br>"+str11+"</html>", JLabel.CENTER),
+	                new JLabel("<html>"+str01+"<br>"+str02+"<br>"+str03+"<br>"+str04+"<br>"+str05+"<br>"+str06+"<br>"+str1+"<br>"+str2+"<br>"+str22+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"<br>"+str7+"<br>"+str8+"<br>"+str9+"<br>"+str10+"<br>"+str11+"<br>"+str12+"<br>"+str13+"</html>", JLabel.CENTER),
 	                "Règles du jeu",  JOptionPane.INFORMATION_MESSAGE);
 		} else if (regle == 1) {
 			String str1 = "Pour donner quelque chose à un joueur, veuillez d'abord sélectionner les objets à échanger.";
@@ -917,7 +931,8 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 			String str2 = "Les personnes possèdant ces rôles ont accès à un pouvoir, actif ou passif. Si le pouvoir est actif, son coût en action sera écrit entre parenthèses.";
 			String str3 = "Une explication indiquant quel est votre pouvoir est écrite sur le tableau de commandes à droite du bouton pouvoir.";
 			String str4 = "Attention ! Les joueurs possèdant un pouvoir actif ne peuvent l'utiliser qu'une fois par tour !";
-			JOptionPane.showMessageDialog(null,"<html>"+"<u>Instructions :</u><br><br>"+ str1+"<br>"+str2+"<br>"+str3+"<br>"+str4+"</html>", "Pouvoir spéciaux", JOptionPane.INFORMATION_MESSAGE);
+			String str5 = "Le navigateur peut uniquement utiliser la méthode -drag and drop- pour pouvoir déplacer d'autres joueurs.";
+			JOptionPane.showMessageDialog(null,"<html>"+"<u>Instructions :</u><br><br>"+ str1+"<br>"+str2+"<br>"+str3+"<br>"+str4+"<br>"+str5+"</html>", "Pouvoir spéciaux", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 	}

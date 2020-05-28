@@ -110,7 +110,7 @@ public class VueCommandes extends JPanel {
 		c.gridy = debutCmds;
 		this.add(nbPlayers, c);
 		
-		addPlayer = new JButton("+ player");
+		addPlayer = new JButton("+ joueur");
 		c.gridx = 1;
 		c.gridy = debutCmds;
 		this.add(addPlayer, c);
@@ -407,7 +407,7 @@ public class VueCommandes extends JPanel {
 			}
 		}
 		
-		this.clearEtalage = new JButton("Clear Etalage");
+		this.clearEtalage = new JButton("Vider l'étalage");
 		c.gridx = 3;
 		c.gridy = debutEtalageY+3;
 		this.add(this.clearEtalage, c);
