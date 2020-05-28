@@ -152,6 +152,9 @@ public class SinglePlayer {
 		this.coord = c;
 	}
 	
+	/**
+	 * Retourne le role du player + son id(+1)
+	 */
 	public String toString() {
 		return this.role+" "+(this.id+1);
 	}
