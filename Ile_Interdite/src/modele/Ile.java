@@ -260,22 +260,29 @@ public class Ile extends Observable {
 		}
 		
 		ArrayList<Coord> voisList = getListVoisins(c);
+		if(except != null) {
+			System.out.println("Except non null");
+		}
 		
 		if(except != null) {  //Verifie s il est possible d avoir un voisin en prenant en compte except
 			int voisinsDisp = 0;
+			if(voisList.isEmpty()) {
+				return null;
+			}
 			for(Coord cVois : voisList) {
 				if(sub == true) {  //Besoin car comme c est submerg (car sauve), c n est pas ilot !
 					if(! except.contains(cVois)) {
 						voisinsDisp++;
 					}
 				} else {
-					if((! except.contains(cVois)) && ! submerg.contains(cVois)) {
+					if((! except.contains(cVois)) && (! submerg.contains(cVois))) {
 						voisinsDisp++;
 					}
 				}
 				
 			}
 			if(voisinsDisp == 0) {
+				System.out.println("Voisins disp = "+voisinsDisp);
 				return null;
 			}
 		}
@@ -284,10 +291,19 @@ public class Ile extends Observable {
 		Coord vois = null;
 		boolean valid = false;
 		
+		int voisins = 0;
+		
 		while (valid == false) {
 			vois = voisList.get(rangedRandomInt(0,voisList.size()-1));
+			voisins++;
+			if(voisins == 100) {
+				return null;
+			}
+			if(except != null && except.isEmpty()) {
+				System.out.println("getVoisin except non null mais vide");
+			}
 			if (sub == false) {
-				if(except != null) {
+				if(except != null && ! except.isEmpty()) {
 					if((! submerg.contains(vois)) && (! except.contains(vois))) {
 						valid = true;
 					}
@@ -298,7 +314,7 @@ public class Ile extends Observable {
 				}
 				
 			} else {
-				if(except != null) {
+				if(except != null && ! except.isEmpty()) {
 					if(! except.contains(vois)) {
 						valid = true;
 					}
@@ -306,6 +322,7 @@ public class Ile extends Observable {
 					valid = true;
 				}
 			}
+			//System.out.println("getVoisin boucle "+voisins);
 		}
 		return vois;
 	}

@@ -153,7 +153,7 @@ public class SinglePlayer {
 	}
 	
 	public String toString() {
-		return this.role+" "+this.id;
+		return this.role+" "+(this.id+1);
 	}
 	
 	

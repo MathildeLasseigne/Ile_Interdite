@@ -901,10 +901,11 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 			String str8 = "! Faites attention à ne pas laisser l'héliport ou les artefacts se faire submerger. Pour éviter cela, assèchez les zones inondées.";
 			String str9 = "Si vous n'avez pas assez de clés pour récupérer un artefact, demandez à l'un de vos camarades de vous les donner !";
 			String str10 = "Utilisez au maximum les pouvoirs que vous avez à disposition ! Vous trouverez leur guide d'utilisation en cliquant sur le bouton [Pouvoirs].";
+			String str11 = "Les artefacts sont représentés sur la carte par des croix.";
 			
 			JOptionPane.showMessageDialog(
 	                null,
-	                new JLabel("<html>"+str01+"<br>"+str02+"<br>"+str03+"<br>"+str04+"<br>"+str05+"<br>"+str06+"<br>"+str1+"<br>"+str2+"<br>"+str22+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"<br>"+str7+"<br>"+str8+"<br>"+str9+"<br>"+str10+"</html>", JLabel.CENTER),
+	                new JLabel("<html>"+str01+"<br>"+str02+"<br>"+str03+"<br>"+str04+"<br>"+str05+"<br>"+str06+"<br>"+str1+"<br>"+str2+"<br>"+str22+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"<br>"+str7+"<br>"+str8+"<br>"+str9+"<br>"+str10+"<br>"+str11+"</html>", JLabel.CENTER),
 	                "Règles du jeu",  JOptionPane.INFORMATION_MESSAGE);
 		} else if (regle == 1) {
 			String str1 = "Pour donner quelque chose à un joueur, veuillez d'abord sélectionner les objets à échanger.";
@@ -977,7 +978,9 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 									this.players.getRole().utilisePower();
 								}
 							}
-						} else if(c.equals(this.actifC)) {
+						} else if(c.equals(this.players.getCoord())) {
+							JOptionPane.showMessageDialog(null, "Vous restez sur place !","0km à pied...", JOptionPane.WARNING_MESSAGE);
+						} else {
 							JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
 						}
 					} else if (e.getButton() == MouseEvent.BUTTON2) {
@@ -1078,6 +1081,8 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 								}
 							} else if(! c.equals(this.actifC)) {
 								JOptionPane.showMessageDialog(null, "Cette zone est trop loin !","1km à pied... 10km à pied...", JOptionPane.WARNING_MESSAGE);
+							} else if(c.equals(this.actifC)) {
+								JOptionPane.showMessageDialog(null, "Vous restez sur place !","0km à pied...", JOptionPane.WARNING_MESSAGE);
 							}
 						}
 						//System.out.println(this.players.getCoord());

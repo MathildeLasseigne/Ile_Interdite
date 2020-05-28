@@ -254,9 +254,11 @@ public class Players {
 		if (cSafe != null) {
 			p.move(cSafe);
 			playersCoord.set(p.getId(), cSafe);
+			System.out.println("Save Player "+ p);
 			return -1;
 			
 		} else {
+			System.out.println("Die player");
 			diePlayer(p.getId());
 			return p.getId();
 		}

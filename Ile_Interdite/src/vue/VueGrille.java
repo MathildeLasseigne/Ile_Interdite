@@ -121,9 +121,9 @@ public class VueGrille extends JPanel implements Observer {
      */
     private void paintZone(Graphics g, Zone z) {
     	Graphics2D g2d = (Graphics2D) g;
-    	g2d.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
     	if(z.getType().isSpecial()) {
     		if(z.getType().hasArtefact() && z.estAccessible()) {
+    			g2d.setStroke(new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
     			if(z.getType() instanceof Artefact ) {
     				Artefact art = (Artefact) z.getType();
     				g2d.setColor(getColorArtefact(art.getElement()));
@@ -132,6 +132,7 @@ public class VueGrille extends JPanel implements Observer {
     				g2d.drawLine(z.getCoord().getAbsc()*TAILLE, ((z.getCoord().getOrd()+1)*TAILLE)-1, ((z.getCoord().getAbsc()+1)*TAILLE)-1, z.getCoord().getOrd()*TAILLE);
     			}
     		} else if(z.getType().isExit() && z.estAccessible()) {
+    			g2d.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
     			g.setColor(Color.black);
     			g.drawOval(z.getCoord().getAbsc()*TAILLE, z.getCoord().getOrd()*TAILLE, TAILLE-1, TAILLE-1);
     			
@@ -168,7 +169,7 @@ public class VueGrille extends JPanel implements Observer {
      */
     public void initPlayers(int nbPlayers) {
     	for(int i = 0; i<nbPlayers; i++) {
-    		this.charaPlayers.add(new JLabel(String.valueOf(i), JLabel.CENTER));
+    		this.charaPlayers.add(new JLabel(String.valueOf(i+1), JLabel.CENTER));
     		this.add(this.charaPlayers.get(i));
     		this.charaPlayers.get(i).setVisible(true);
     		this.charaPlayers.get(i).setSize(TAILLE, TAILLE);
@@ -202,7 +203,7 @@ public class VueGrille extends JPanel implements Observer {
     	} else if(element == 1) {
     		return new Color(187, 11, 11);
     	} else if(element == 2) {
-    		return Color.WHITE;
+    		return new Color(223, 115, 255);
     	} else if(element == 3) {
     		return new Color(34, 120, 15);
     	}
