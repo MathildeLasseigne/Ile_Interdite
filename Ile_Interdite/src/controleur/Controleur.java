@@ -932,7 +932,8 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 			String str3 = "Une explication indiquant quel est votre pouvoir est écrite sur le tableau de commandes à droite du bouton pouvoir.";
 			String str4 = "Attention ! Les joueurs possèdant un pouvoir actif ne peuvent l'utiliser qu'une fois par tour !";
 			String str5 = "Le navigateur peut uniquement utiliser la méthode -drag and drop- pour pouvoir déplacer d'autres joueurs.";
-			JOptionPane.showMessageDialog(null,"<html>"+"<u>Instructions :</u><br><br>"+ str1+"<br>"+str2+"<br>"+str3+"<br>"+str4+"<br>"+str5+"</html>", "Pouvoir spéciaux", JOptionPane.INFORMATION_MESSAGE);
+			String str6 = "  Plus vous avez de camarades dans votre aventure, plus vous avez de chance de recruter quelqu'un possèdant un pouvoir spécial ! ";
+			JOptionPane.showMessageDialog(null,"<html>"+"<u>Instructions :</u><br><br>"+ str1+"<br>"+str2+"<br>"+str3+"<br>"+str4+"<br>"+str5+"<br>"+str6+"</html>", "Pouvoir spéciaux", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 	}
