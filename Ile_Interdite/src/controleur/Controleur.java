@@ -461,7 +461,7 @@ public class Controleur implements ActionListener, MouseMotionListener, MouseLis
 			this.players.addCle(element);
 			JOptionPane.showMessageDialog(
                     null,
-                    new JLabel("Félicitation ! Joueur "+this.players.getId()+" a trouvé une nouvelle clé !", this.cmds.getImageIcon(false, element), JLabel.LEFT),
+                    new JLabel("Félicitation ! "+this.players.getStringPlayer(this.players.getId())+" a trouvé une nouvelle clé !", this.cmds.getImageIcon(false, element), JLabel.LEFT),
                     "Un pas de plus vers les artefacts !", JOptionPane.INFORMATION_MESSAGE);
 			this.cmds.setInventaire(this.players.getInventaire());
 			
